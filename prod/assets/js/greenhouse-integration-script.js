@@ -16,8 +16,8 @@ jQuery(document).ready(function($){
                     break;
             }
         });
-        console.log("totalJobs = " + totalJobs);
-        console.log("engineeringJobs = " + engineeringJobs);
-        console.log("salesJobs = " + salesJobs);
+        $('*[data-job-type="all"]').html(totalJobs);
+        $('*[data-job-type="engineering"]').html(engineeringJobs);
+        $('*[data-job-type="sales"]').html(salesJobs);
     });
 });
