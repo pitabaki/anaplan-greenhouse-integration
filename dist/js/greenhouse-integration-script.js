@@ -18,11 +18,19 @@ jQuery(document).ready(function($){
 
         var jobFigureArr = [],
             countryJobArr = [],
-            cityJobArr = [];
+            cityJobArr = [],
+            jobCategoryArr = [];
+
+        var sidebarChecklistMarkup = "<li><span class='item-title-checkbox'>"
+        + "<input name='${value}' value='${value}' type='checkbox' />"
+        + "<label>${value}</label>"
+        + "</span>"
+        + "<span class='item-amount'><span class='item-amount-container'>${amount}</span></span></li>";
 
         var countryKey = ["Australia", "Belgium", "Canada", "Germany", "France", "United Kingdom", "India", "Japan", "Philippines", "Sweden", "Singapore", "US"];
         var cityKey = ["Atlanta", "Boston", "Chicago"];
         $.each(data.departments, function(key,val){
+            console.log(val);
 
             /*
 
@@ -30,6 +38,11 @@ jQuery(document).ready(function($){
                 pass value name and calculate total number of jobs
 
             */
+
+            if ( val.jobs.length > 0 ) {
+                var currentCategory = new jobFigureObj( val.name, val.jobs.length );
+                jobCategoryArr.push( currentCategory);
+            }
 
             totalJobs += val.jobs.length;
             switch ( val.name ) {
@@ -57,6 +70,16 @@ jQuery(document).ready(function($){
         $.each(jobFigureArr, function(key, val){
             swapJobFigures(val);
         });
+        var jobCategoryMarkup = jobCategoryArr.map(function(key, val){
+            var currentCategoryMarkup = sidebarChecklistMarkup.replace(/\$\{value\}/gi, key.query);
+            return currentCategoryMarkup.replace(/\$\{amount\}/gi, key.amount);
+        });
+        console.log("jobCategoryMarkup");
+        console.log(jobCategoryMarkup);
+        
+        $("<ul/>", {
+            html: jobCategoryMarkup.join("")
+        }).appendTo("#category");
     });
     $.getJSON("https://boards-api.greenhouse.io/v1/boards/anaplan/offices/", function(data){
         console.log(data);
@@ -75,5 +98,26 @@ jQuery(document).ready(function($){
             }
             //console.log(val.name);
         });
+    });
+
+    /*
+
+    When a box is checked, check which boxes are checked and which values need to be filtered
+
+    */
+
+    $(document).on("click","*[type='checkbox']", function(e){
+        var checkboxArr = $("*[type='checkbox']");
+        var checkboxCheck = function ( arr, num ) {
+            if ( num < arr.length ) {
+                var checkedCheck = arr.eq(num).prop("checked");
+                if ( checkedCheck === true ) {
+                    var checkboxValue = arr.eq(num).attr("value");
+                    var categoryCheck = arr.eq(num).parents(".item-list").attr("id");
+                }
+                num++;
+                checkboxCheck(arr,num);
+            }
+        };
     });
 });
