@@ -1,3 +1,17 @@
+/**
+ * Plugin Name:       Anaplan Menu to JSON
+ * Plugin URI:        https://www.anaplan.com/
+ * Description:       JS to work with Greenhouse API
+ * Version:           1.0.1
+ * Author:            Peter Berki
+ * Author URI:        https://kumadev.com
+ * License:           GPL-2.0+
+ * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * Text Domain:       anaplan
+ * Domain Path:       /languages
+ * Test URL Path:     window.location.href + ?filter=true;category=Engineering;city=San%20Francisco;country=United&20States
+ */
+
 jQuery(document).ready(function($){
 
     var careerSiteAbsoluteURL = "https://anaplan.staging.wpengine.com/careers/jobs/?id=";
@@ -170,6 +184,25 @@ jQuery(document).ready(function($){
             });
         }
     } else {
+
+        /*
+        
+        Update filtering for Engineering and Sales job listing pages
+
+        */
+
+        if ( currentURL.indexOf("/engineering") !== -1 ) {
+            currentURL = currentURL + "?filter=true;category=Engineering";
+        } else if ( currentURL.indexOf("/sales") !== -1 ) {
+            currentURL = currentURL + "?filter=true;category=Field%20Sales";
+        }
+
+        /*
+        
+        Make request from Greenhouse for job listing by departments
+
+        */
+
         $.getJSON("https://boards-api.greenhouse.io/v1/boards/anaplan/departments/", function(data){
             var totalJobs = 0,
                 engineeringJobs = 0,
@@ -187,7 +220,7 @@ jQuery(document).ready(function($){
             + "</span>"
             + "<span class='item-amount'><span class='item-amount-container'>${amount}</span></span></li>";
     
-            var individualJobMarkup = "<div data-category='${category}' data-city='${city}' data-country='${country}' class='job-list-row job-list-row--active'>"
+            var individualJobMarkup = "<div data-category='${category}' data-city='${city}' data-country='${country}' class='job-list-row job-list-row--active job-list-row--filtered'>"
             + "<div class='job-list-column job-list-column--large'>"
             + "<p><a href='${job-href}'>${job-title}</a></p>"
             + "</div>"
@@ -376,15 +409,7 @@ jQuery(document).ready(function($){
         });
     } // end else
 
-
-    /*
-
-    When a box is checked, check which boxes are checked and which values need to be filtered
-
-    */
-
-    $(document).on("click","*[type='checkbox']", function(e) {
-        
+    var filteringProcess = function() {
         //Keep record of whether a checkbox has been selected
         var checkboxSelected = false;
 
@@ -400,6 +425,7 @@ jQuery(document).ready(function($){
                 if ( !arr.eq(num).hasClass(exception) ) {
                     //arr.eq(num).css({"display":"none"});
                     arr.eq(num).removeClass("job-list-row--active");
+                    arr.eq(num).removeClass("job-list-row--filtered");
                 }
                 num++;
                 hideJobRow(arr, num, exception);
@@ -411,6 +437,7 @@ jQuery(document).ready(function($){
                 if ( !arr.eq(num).hasClass("job-list-row--title") ) {
                     //arr.eq(num).css({"display":"flex"});
                     arr.eq(num).addClass("job-list-row--active");
+                    arr.eq(num).addClass("job-list-row--filtered");
                 }
                 num++;
                 showJobRow(arr, num, exception);
@@ -475,21 +502,17 @@ jQuery(document).ready(function($){
         //Checks for checked checkboxes
         checkboxCheck(checkboxArr, 0);
 
-        var removeFilterProcess = function( arr, num, query, activeClass ) {
+        var removeFilterProcess = function( arr, num, query ) {
             if ( num < arr.length ) {
-                for ( var x = 0; x < activeClass.length; x++ ) {
-                    if ( arr[num] !== activeClass.eq(x).attr("data-" + query) ) {
-                        activeClass.eq(x).removeClass("job-list-row--active");
-                    }
-                }
+                console.log("arr[num] =" + arr[num]);
+                $("*[data-" + query + "='" + arr[num] + "']").addClass("job-list-row--filtered");
                 num++;
-                removeFilterProcess(arr, num, query, activeClass);
+                removeFilterProcess(arr, num, query);
             }
         };
 
         var additiveFilterProcess = function( arr, num, query ) {
             if ( num < arr.length ) {
-                console.log("query = " + query);
                 $("*[data-" + query + "='" + arr[num] + "']").addClass("job-list-row--active");
                 num++;
                 additiveFilterProcess(arr, num, query);
@@ -498,19 +521,25 @@ jQuery(document).ready(function($){
 
         var applyFilters = function( arr, num ) {
             if ( num < arr.length ) {
-                if ( num === 0 ) {
-                    console.log("arr[num].query = " + arr[num].query);
+                if ( num === 0 && arr[num].query === "category" && arr.length !== 1 ) {
                     additiveFilterProcess( arr[num].arr, 0, arr[num].query );
-                } else if ( num === 1 && num + 1 === arr.length && arr[num - 1].query !== "category" ) {
+                } else if ( num === 0 && arr[num].query === "category" && arr.length === 1 ) {
                     additiveFilterProcess( arr[num].arr, 0, arr[num].query );
-                } else {
+                    removeFilterProcess( arr[num].arr, 0, arr[num].query );
+                } else if ( num === 0 && ( arr[num].query === "city" || arr[num].query === "country" ) && arr.length !== 1 ) {
                     additiveFilterProcess( arr[num].arr, 0, arr[num].query );
-                    //removeFilterProcess( arr[num].arr, 0, arr[num].query, $(".job-list-row--active") );
+                } else if ( num > 0 && ( arr[num].query === "city" || arr[num].query === "country" ) ) {
+                    removeFilterProcess( arr[num].arr, 0, arr[num].query );
+                } else if ( num === 0 && arr.length === 1 ) {
+                    additiveFilterProcess( arr[num].arr, 0, arr[num].query );
+                    removeFilterProcess( arr[num].arr, 0, arr[num].query );
                 }
                 num++;
                 applyFilters(arr, num);
             }
         };
+
+        console.log("checkedArr.length = " + checkedArr.length);
 
         if ( checkedArr.length === 0 ) {
             hideJobRow($('.job-list-row'), 0, "job-list-row--title");
@@ -518,8 +547,70 @@ jQuery(document).ready(function($){
         } else {
             applyFilters( checkedArr, 0);
         }
-        console.log(checkedArr);
 
+        console.log(checkedArr);
+    };
+
+
+    /*
+
+    When a box is checked, check which boxes are checked and which values need to be filtered
+
+    */
+
+    $(document).on("click","*[type='checkbox']", function(e) {
+        filteringProcess();
     });
+
+    var pageLoad = false;
+
+    //Filter loop based on URL
+    var filterCategoryLoop = function (arr, num) {
+        if ( num < arr.length ) {
+            var checkFilters = arr[num].substr(arr[num].indexOf("=") + 1, arr[num].length).split("&");
+            valueCheckboxesLoop(checkFilters, 0);
+            num++;
+            filterCategoryLoop(arr, num);
+        }
+    }
+
+    //Value loop based on Filter Loop
+    var valueCheckboxesLoop = function( arr, num ) {
+        if ( num < arr.length ) {
+            console.log(arr[num].replace(/%20/gi, " "));
+            $("*[value='" + arr[num].replace(/%20/gi, " ") + "']").eq(0).prop("checked", true);
+            num++;
+            valueCheckboxesLoop(arr, num);
+        }
+    };
+
+    var checkForFilterURL = function( passedURL ) {
+        if ( passedURL.indexOf("?filter=true;") !== -1 ) {
+            //Shorten URL to only filters
+            var newURL = passedURL.substr(passedURL.indexOf("?filter=true;") + 13, passedURL.length);
+
+            //Split URL into array of filters
+            var checkCategory = newURL.substr(0, newURL.length).split(";");
+
+            //Loop through filters
+            filterCategoryLoop(checkCategory, 0);
+            filteringProcess();
+        }
+    };
+
+    var checkCheckboxLoop = function(passedURL) {
+        if ( pageLoad === false && passedURL.indexOf("?filter=true;") !== -1 ) {
+            var checkBoxCheck = $("*[type='checkbox']").length;
+            ( checkBoxCheck > 0 ) ? pageLoad = true : pageload = false;
+            setTimeout(function(){
+                checkCheckboxLoop(passedURL);
+            }, 500);
+        } else if ( pageLoad === true && passedURL.indexOf("?filter=true;") !== -1 ) {
+            checkForFilterURL(passedURL);
+        }
+    };
+    checkCheckboxLoop(currentURL);
+
+    //window.location.href = window.location.href + "?filter=true;category=Engineering;city=San%20Francisco;country=United&20States";
 
 });
