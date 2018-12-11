@@ -45,6 +45,18 @@ jQuery(document).ready(function($){
 
     var sidebarMarkupArr = [];
 
+    //Update inactive vs active jobs copy
+    var jobCountUpdate = function( inactiveClass, activeClass ) {
+        var displayMarkup = "<p>Displaying ${amount} entries";
+        var totalActiveJobs = $(activeClass).length;
+        var totalInactiveJobs = $(inactiveClass).length;
+        if ( totalActiveJobs === totalInactiveJobs ) {
+            $("#job-list-total").html(displayMarkup.replace(/\$\{amount\}/gi, "<strong>all</strong>"));
+        } else {
+            $("#job-list-total").html(displayMarkup.replace(/\$\{amount\}/gi, "<strong>" + totalActiveJobs + "</strong> of <strong>" + totalInactiveJobs + "</strong>"));
+        }
+    };
+
 
     /*
     
@@ -405,6 +417,7 @@ jQuery(document).ready(function($){
             };
     
             sidebarMarkupFunc(sidebarMarkupArr, 0);
+            jobCountUpdate(".job-list-row", ".job-list-row--active.job-list-row--filtered");
     
         });
     } // end else
@@ -413,7 +426,8 @@ jQuery(document).ready(function($){
         //Keep record of whether a checkbox has been selected
         var checkboxSelected = false;
 
-        var checkedArr = [];
+        var checkedArr = [],
+            filterButtonMarkupArr = [];
 
         var checkedObj = function ( query ) {
             this.query = query;
@@ -502,9 +516,26 @@ jQuery(document).ready(function($){
         //Checks for checked checkboxes
         checkboxCheck(checkboxArr, 0);
 
+        
+        var addFilterButton = function( arr, num, query ) {
+            if ( num < arr.length ) {
+                var filterButtonMarkup = "<span class='job-filter-button job-filter-button--${color}' data-${query}='${filter}'>${filter} <span class='job-filter-button--delete'>x</span></span>";
+                if ( query === "category" ) {
+                    filterButtonMarkup = filterButtonMarkup.replace(/\$\{color\}/gi, "blue");
+                } else {
+                    filterButtonMarkup = filterButtonMarkup.replace(/\$\{color\}/gi, "green");
+                }
+                filterButtonMarkup = filterButtonMarkup.replace(/\$\{filter\}/gi, arr[num]);
+                filterButtonMarkup = filterButtonMarkup.replace(/\$\{query\}/gi, query);
+                filterButtonMarkupArr.push(filterButtonMarkup);
+                num++;
+                addFilterButton(arr, num, query);
+            }
+        };
+
         var removeFilterProcess = function( arr, num, query ) {
             if ( num < arr.length ) {
-                console.log("arr[num] =" + arr[num]);
+                console.log("removeFilterProcess Called");
                 $("*[data-" + query + "='" + arr[num] + "']").addClass("job-list-row--filtered");
                 num++;
                 removeFilterProcess(arr, num, query);
@@ -513,6 +544,7 @@ jQuery(document).ready(function($){
 
         var additiveFilterProcess = function( arr, num, query ) {
             if ( num < arr.length ) {
+                console.log("additiveFilterProcess Called");
                 $("*[data-" + query + "='" + arr[num] + "']").addClass("job-list-row--active");
                 num++;
                 additiveFilterProcess(arr, num, query);
@@ -523,20 +555,25 @@ jQuery(document).ready(function($){
             if ( num < arr.length ) {
                 if ( num === 0 && arr[num].query === "category" && arr.length !== 1 ) {
                     additiveFilterProcess( arr[num].arr, 0, arr[num].query );
+                    addFilterButton( arr[num].arr, 0, arr[num].query );
                 } else if ( num === 0 && arr[num].query === "category" && arr.length === 1 ) {
                     additiveFilterProcess( arr[num].arr, 0, arr[num].query );
                     removeFilterProcess( arr[num].arr, 0, arr[num].query );
+                    addFilterButton( arr[num].arr, 0, arr[num].query );
                 } else if ( num === 0 && ( arr[num].query === "city" || arr[num].query === "country" ) && arr.length !== 1 ) {
                     additiveFilterProcess( arr[num].arr, 0, arr[num].query );
                 } else if ( num > 0 && ( arr[num].query === "city" || arr[num].query === "country" ) ) {
                     removeFilterProcess( arr[num].arr, 0, arr[num].query );
+                    addFilterButton( arr[num].arr, 0, arr[num].query );
                 } else if ( num === 0 && arr.length === 1 ) {
                     additiveFilterProcess( arr[num].arr, 0, arr[num].query );
                     removeFilterProcess( arr[num].arr, 0, arr[num].query );
+                    addFilterButton( arr[num].arr, 0, arr[num].query );
                 }
                 num++;
                 applyFilters(arr, num);
             }
+            $("#job-filter-buttons").html(filterButtonMarkupArr.join(""));
         };
 
         console.log("checkedArr.length = " + checkedArr.length);
@@ -544,11 +581,12 @@ jQuery(document).ready(function($){
         if ( checkedArr.length === 0 ) {
             hideJobRow($('.job-list-row'), 0, "job-list-row--title");
             showJobRow($('.job-list-row'), 0, "job-list-row--title");
+            $("#job-filter-buttons").html("");
         } else {
             applyFilters( checkedArr, 0);
         }
 
-        console.log(checkedArr);
+        jobCountUpdate(".job-list-row", ".job-list-row--active.job-list-row--filtered");
     };
 
 
@@ -557,10 +595,6 @@ jQuery(document).ready(function($){
     When a box is checked, check which boxes are checked and which values need to be filtered
 
     */
-
-    $(document).on("click","*[type='checkbox']", function(e) {
-        filteringProcess();
-    });
 
     var pageLoad = false;
 
@@ -609,8 +643,31 @@ jQuery(document).ready(function($){
             checkForFilterURL(passedURL);
         }
     };
+
     checkCheckboxLoop(currentURL);
 
+
     //window.location.href = window.location.href + "?filter=true;category=Engineering;city=San%20Francisco;country=United&20States";
+
+    /*
+    
+    Actions/interactions
+    
+    */
+
+    $(document).on("click", "*[type='checkbox']", function(e) {
+        filteringProcess();
+    });
+
+    $(document).on("click", ".job-filter-button", function(e) {
+        e.preventDefault();
+        console.log($(this).data());
+        $.each($(this).data(), function(key, val){
+            console.log(key);
+            console.log(val);
+            $("#" + key).find("*[value='" + val + "']").prop("checked", false);
+        });
+        filteringProcess();
+    });
 
 });
