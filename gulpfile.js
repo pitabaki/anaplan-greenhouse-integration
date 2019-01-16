@@ -1,6 +1,5 @@
 var gulp = require('gulp'),
-	minify = require('gulp-minify'),
-	concat = require('gulp-concat');
+	minify = require('gulp-minify');
 
 
 

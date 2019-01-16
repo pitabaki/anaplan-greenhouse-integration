@@ -14,7 +14,11 @@
 
 jQuery(document).ready(function($){
 
-    var careerSiteAbsoluteURL = "https://anaplan.staging.wpengine.com/careers/jobs/?id=";
+
+    var absoluteURL = window.location.href;
+    absoluteURL = absoluteURL.substr(0, absoluteURL.indexOf(".com") + 4);
+
+    var careerSiteAbsoluteURL = absoluteURL + "/jobs/?id=";
 
     /*
 
@@ -34,6 +38,7 @@ jQuery(document).ready(function($){
         this.type = type;
         this.location = location;
     };
+    
     var jobFigureObj = function(query, amount) {
         this.query = query;
         this.amount = amount;
@@ -68,8 +73,9 @@ jQuery(document).ready(function($){
 
     if ( currentURL.indexOf("/jobs/") > 0 ) {
         var currentJobID = currentURL.substr(currentURL.indexOf("?id=") + 4, currentURL.length);
-        console.log("currentJobID = " + currentJobID);
-        if ( currentJobID.length > 1 ) {
+        //console.log("currentJobID = " + currentJobID);
+        //console.log(currentURL.indexOf("?id="));
+        if ( currentURL.indexOf("?id=") !== -1 ) {
 
             /*
             
@@ -94,30 +100,37 @@ jQuery(document).ready(function($){
                 $("#job-content").html(thisContent);
                 $("#job-greenhouse-href").attr("href", data.absolute_url);
 
+                var itFeaturePath = "/wp-content/uploads/2018/12/solution_IT_feature.jpg";
+                var salesFeaturePath = "/wp-content/uploads/2018/12/solution_sales_feature.jpg";
+                var supplyChainFeaturePath = "/wp-content/uploads/2018/12/solution_supplyChain_feature.jpg";
+
                 switch ( data.departments[0].name ) {
                     case "Engineering":
-                        var backgroundImage = "/careers/wp-content/uploads/sites/23/2018/12/solution_IT_feature.jpg";
+                        var backgroundImage = itFeaturePath;
                         break;
                     case "IT":
-                        var backgroundImage = "/careers/wp-content/uploads/sites/23/2018/12/solution_IT_feature.jpg";
+                        var backgroundImage = itFeaturePath;
                         break;
                     case "Technical Operations":
-                        var backgroundImage = "/careers/wp-content/uploads/sites/23/2018/12/solution_IT_feature.jpg";
+                        var backgroundImage = itFeaturePath;
                         break;
                     case "Field Sales":
-                        var backgroundImage = "/careers/wp-content/uploads/sites/23/2018/12/solution_sales_feature.jpg";
+                        var backgroundImage = salesFeaturePath;
                         break;
                     case "Inside Sales":
-                        var backgroundImage = "/careers/wp-content/uploads/sites/23/2018/12/solution_sales_feature.jpg";
+                        var backgroundImage = salesFeaturePath;
+                        break;
+                    case "Sales Development":
+                        var backgroundImage = salesFeaturePath;
                         break;
                     case "Pre-Sales":
-                        var backgroundImage = "/careers/wp-content/uploads/sites/23/2018/12/solution_sales_feature.jpg";
+                        var backgroundImage = salesFeaturePath;
                         break;
                     case "Marketing":
-                        var backgroundImage = "/careers/wp-content/uploads/sites/23/2018/12/solution_sales_feature.jpg";
+                        var backgroundImage = salesFeaturePath;
                         break;
                     default:
-                        var backgroundImage = "/careers/wp-content/uploads/sites/23/2018/12/solution_supplyChain_feature.jpg";
+                        var backgroundImage = supplyChainFeaturePath;
                         break;
                 }
                 $("#job-background").css({"background-image" : "url(" + backgroundImage + ")"});
@@ -128,7 +141,7 @@ jQuery(document).ready(function($){
                 var thisDepartment = data.departments[0].name;
 
                 $.getJSON("https://boards-api.greenhouse.io/v1/boards/anaplan/departments/", function(data){
-                    console.log(data.departments);
+                    //console.log(data.departments);
                     var relatedJobsArr = [];
                     $.each(data.departments, function( key, val ) {
 
@@ -194,6 +207,8 @@ jQuery(document).ready(function($){
                     });
                 });
             });
+        } else {
+            window.location.href = window.location.href.substr(0, window.location.href.indexOf("/jobs")) + "/job-listing/";
         }
     } else {
 
@@ -206,7 +221,7 @@ jQuery(document).ready(function($){
         if ( currentURL.indexOf("/engineering") !== -1 ) {
             currentURL = currentURL + "?filter=true;category=Engineering";
         } else if ( currentURL.indexOf("/sales") !== -1 ) {
-            currentURL = currentURL + "?filter=true;category=Field%20Sales";
+            currentURL = currentURL + "?filter=true;category=Field%20Sales&Pre-Sales&Sales%20Development";
         }
 
         /*
@@ -273,7 +288,7 @@ jQuery(document).ready(function($){
                 */
     
                 if ( val.jobs.length > 0 && val.name !== "Template" ) {
-                    var currentCategory = new jobFigureObj( val.name, val.jobs.length );
+                    var currentCategory = new jobFigureObj( val.name.replace("Inside Sales", "Sales Development"), val.jobs.length );
                     jobCategoryArr.push(currentCategory);
                     var currentCategoryJobs = val.jobs.map(function(key, val){
                         var currentLocation = key.location.name.split(",");
@@ -336,7 +351,7 @@ jQuery(document).ready(function($){
                         thisMarkup = thisMarkup.replace(/\$\{job-href\}/gi, jobHref);
                         thisMarkup = thisMarkup.replace(/\$\{job-title\}/gi, key.title);
                         thisMarkup = thisMarkup.replace(/\$\{location\}/gi, key.location.name.trim());
-                        return thisMarkup.replace(/\$\{category\}/gi, currentCategory.query);
+                        return thisMarkup.replace(/\$\{category\}/gi, currentCategory.query.trim());
                     });
                     jobIndividualListArr.push(currentCategoryJobs.join(""));
                 }
@@ -492,9 +507,11 @@ jQuery(document).ready(function($){
         var checkboxCheck = function ( arr, num ) {
             if ( num < arr.length ) {
                 var checkedCheck = arr.eq(num).prop("checked");
-                if ( checkedCheck === true ) {
+                //console.log("arr id = " + arr.eq(num).attr("id"));
+                if ( checkedCheck === true && arr.eq(num).attr("id") === undefined ) {
                     var checkboxValue = arr.eq(num).attr("value").trim(),
                         categoryCheck = arr.eq(num).parents(".item-list").attr("id").trim();
+                        
                     if ( checkedArr.length > 0 ) {
                         var newCategory = new checkedObj(categoryCheck);
                         newCategory.arr.push(checkboxValue);
@@ -535,7 +552,6 @@ jQuery(document).ready(function($){
 
         var removeFilterProcess = function( arr, num, query ) {
             if ( num < arr.length ) {
-                console.log("removeFilterProcess Called");
                 $("*[data-" + query + "='" + arr[num] + "']").addClass("job-list-row--filtered");
                 num++;
                 removeFilterProcess(arr, num, query);
@@ -544,7 +560,6 @@ jQuery(document).ready(function($){
 
         var additiveFilterProcess = function( arr, num, query ) {
             if ( num < arr.length ) {
-                console.log("additiveFilterProcess Called");
                 $("*[data-" + query + "='" + arr[num] + "']").addClass("job-list-row--active");
                 num++;
                 additiveFilterProcess(arr, num, query);
@@ -575,8 +590,6 @@ jQuery(document).ready(function($){
             }
             $("#job-filter-buttons").html(filterButtonMarkupArr.join(""));
         };
-
-        console.log("checkedArr.length = " + checkedArr.length);
 
         if ( checkedArr.length === 0 ) {
             hideJobRow($('.job-list-row'), 0, "job-list-row--title");
@@ -611,7 +624,6 @@ jQuery(document).ready(function($){
     //Value loop based on Filter Loop
     var valueCheckboxesLoop = function( arr, num ) {
         if ( num < arr.length ) {
-            console.log(arr[num].replace(/%20/gi, " "));
             $("*[value='" + arr[num].replace(/%20/gi, " ") + "']").eq(0).prop("checked", true);
             num++;
             valueCheckboxesLoop(arr, num);
@@ -661,10 +673,7 @@ jQuery(document).ready(function($){
 
     $(document).on("click", ".job-filter-button", function(e) {
         e.preventDefault();
-        console.log($(this).data());
         $.each($(this).data(), function(key, val){
-            console.log(key);
-            console.log(val);
             $("#" + key).find("*[value='" + val + "']").prop("checked", false);
         });
         filteringProcess();
