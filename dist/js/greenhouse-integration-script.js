@@ -89,7 +89,7 @@ jQuery(document).ready(function($){
 
             //call greenhouse data; pull in information about job
             $.getJSON(greenhouseJobURL, function(data) {
-
+                console.log(data);
                 var thisContent = data.content.replace(/&lt;/gi, "<");
                 thisContent = thisContent.replace(/&gt;/gi, ">");
                 thisContent = thisContent.replace(/&quot;/gi, "\"");
@@ -677,6 +677,10 @@ jQuery(document).ready(function($){
             $("#" + key).find("*[value='" + val + "']").prop("checked", false);
         });
         filteringProcess();
+    });
+
+    $(document).on("input", "#form-field-name", function(e){
+        console.log($("#form-field-name").val());
     });
 
 });

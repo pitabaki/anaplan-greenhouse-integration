@@ -11,6 +11,16 @@
     "gulp-concat": "^2.6.1",
     "gulp-minify": "^3.1.0"
   },
-  "devDependencies": {},
-  "description": ""
+  "devDependencies": {
+    "@babel/core": "^7.2.2"
+  },
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pitabaki/anaplan-greenhouse-integration.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pitabaki/anaplan-greenhouse-integration/issues"
+  },
+  "homepage": "https://github.com/pitabaki/anaplan-greenhouse-integration#readme"
 }

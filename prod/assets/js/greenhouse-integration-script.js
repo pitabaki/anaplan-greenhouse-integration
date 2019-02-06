@@ -133,6 +133,7 @@ jQuery(document).ready(function($){
                         var backgroundImage = supplyChainFeaturePath;
                         break;
                 }
+                
                 $("#job-background").css({"background-image" : "url(" + backgroundImage + ")"});
                 setTimeout(function(){
                     $("#job-background").css("opacity", 1);
@@ -677,6 +678,10 @@ jQuery(document).ready(function($){
             $("#" + key).find("*[value='" + val + "']").prop("checked", false);
         });
         filteringProcess();
+    });
+
+    $(document).on("input", "#form-field-name", function(e){
+        console.log($("#form-field-name").val());
     });
 
 });
