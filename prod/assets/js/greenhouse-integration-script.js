@@ -32,12 +32,6 @@ jQuery(document).ready(function($){
         this.appendID = appendID;
         this.markup = markup;
     };
-
-    var listItemObj = function(title, type, location) {
-        this.title = title;
-        this.type = type;
-        this.location = location;
-    };
     
     var jobFigureObj = function(query, amount) {
         this.query = query;
@@ -88,8 +82,9 @@ jQuery(document).ready(function($){
             var greenhouseJobURL = "https://boards-api.greenhouse.io/v1/boards/anaplan/jobs/" + currentJobID;
 
             //call greenhouse data; pull in information about job
-            $.getJSON(greenhouseJobURL, function(data) {
-
+            $.ajax({
+                url: greenhouseJobURL
+            }).done(function(data) {
                 var thisContent = data.content.replace(/&lt;/gi, "<");
                 thisContent = thisContent.replace(/&gt;/gi, ">");
                 thisContent = thisContent.replace(/&quot;/gi, "\"");
@@ -133,7 +128,7 @@ jQuery(document).ready(function($){
                         var backgroundImage = supplyChainFeaturePath;
                         break;
                 }
-                
+
                 $("#job-background").css({"background-image" : "url(" + backgroundImage + ")"});
                 setTimeout(function(){
                     $("#job-background").css("opacity", 1);
@@ -142,7 +137,6 @@ jQuery(document).ready(function($){
                 var thisDepartment = data.departments[0].name;
 
                 $.getJSON("https://boards-api.greenhouse.io/v1/boards/anaplan/departments/", function(data){
-                    //console.log(data.departments);
                     var relatedJobsArr = [];
                     $.each(data.departments, function( key, val ) {
 
@@ -207,7 +201,10 @@ jQuery(document).ready(function($){
                         }
                     });
                 });
-            });
+            })
+            .fail(function(){
+                window.location.href = window.location.href.substr(0, window.location.href.indexOf("/jobs")) + "/job-listing/";
+            }); //End done
         } else {
             window.location.href = window.location.href.substr(0, window.location.href.indexOf("/jobs")) + "/job-listing/";
         }
@@ -239,16 +236,23 @@ jQuery(document).ready(function($){
             var jobFigureArr = [],
                 countryJobArr = [],
                 cityJobArr = [],
+                jobArr = [],
                 jobCategoryArr = [],
                 jobIndividualListArr = [];
     
             var sidebarChecklistMarkup = "<li><span class='item-title-checkbox'>"
             + "<input name='${value}' value='${value}' type='checkbox' />"
-            + "<label>${value}</label>"
+            + "<label>${display}</label>"
+            + "</span>"
+            + "<span class='item-amount'><span class='item-amount-container'>${amount}</span></span></li>";
+
+            var sidebarChecklistMarkupHidden = "<li style='display:none;'><span class='item-title-checkbox'>"
+            + "<input name='${value}' value='${value}' type='checkbox' />"
+            + "<label>${display}</label>"
             + "</span>"
             + "<span class='item-amount'><span class='item-amount-container'>${amount}</span></span></li>";
     
-            var individualJobMarkup = "<div data-category='${category}' data-city='${city}' data-country='${country}' class='job-list-row job-list-row--active job-list-row--filtered'>"
+            var individualJobMarkup = "<div data-search='${search}' data-category='${category}' data-city='${city}' data-country='${country}' data-title='${job-data-title}' class='job-list-row job-list-row--active job-list-row--filtered'>"
             + "<div class='job-list-column job-list-column--large'>"
             + "<p><a href='${job-href}'>${job-title}</a></p>"
             + "</div>"
@@ -260,7 +264,7 @@ jQuery(document).ready(function($){
             + "</div>"
             + "</div>";
     
-            var addNewLocation = function( value, comparisonList, num ) {
+            var addNewLocation = function( value, comparisonList, num ) {   
                 var currentValue = value;
                 if ( comparisonList.length < 1 ) {
                     var currentLocation = new jobFigureObj( currentValue , 1 );
@@ -280,7 +284,7 @@ jQuery(document).ready(function($){
             };
     
             $.each(data.departments, function(key,val) {
-    
+
                 /*
     
                     swapJobFigures support
@@ -291,9 +295,16 @@ jQuery(document).ready(function($){
                 if ( val.jobs.length > 0 && val.name !== "Template" ) {
                     var currentCategory = new jobFigureObj( val.name.replace("Inside Sales", "Sales Development"), val.jobs.length );
                     jobCategoryArr.push(currentCategory);
+
+                    $.each(val.jobs, function(key,val) {
+                        var currentJob = new jobFigureObj(val.title, 1);
+                        jobArr.push(currentJob);
+                    });
+
                     var currentCategoryJobs = val.jobs.map(function(key, val){
                         var currentLocation = key.location.name.split(",");
                         var jobHref = careerSiteAbsoluteURL + key.id;
+                        var searchParameter = key.location.name.trim().toLowerCase() + "," + key.title.toLowerCase();
                         if ( currentLocation.length > 1 ) {
     
                             /*
@@ -320,8 +331,8 @@ jQuery(document).ready(function($){
     
                             */
     
-                            var thisMarkup = individualJobMarkup.replace(/\$\{city\}/gi, cityValue);
-                            thisMarkup = thisMarkup.replace(/\$\{country\}/gi, countryValue);
+                            var thisMarkup = individualJobMarkup.replace(/\$\{city\}/gi, cityValue.toLowerCase());
+                            thisMarkup = thisMarkup.replace(/\$\{country\}/gi, countryValue.toLowerCase());
                         } else {
     
                             /*
@@ -347,12 +358,14 @@ jQuery(document).ready(function($){
     
                             */
     
-                            var thisMarkup = individualJobMarkup.replace(/\$\{country\}/gi, countryValue);
+                            var thisMarkup = individualJobMarkup.replace(/\$\{country\}/gi, countryValue.toLowerCase());
                         }
                         thisMarkup = thisMarkup.replace(/\$\{job-href\}/gi, jobHref);
                         thisMarkup = thisMarkup.replace(/\$\{job-title\}/gi, key.title);
+                        thisMarkup = thisMarkup.replace(/\$\{job-data-title\}/gi, key.title.toLowerCase());
                         thisMarkup = thisMarkup.replace(/\$\{location\}/gi, key.location.name.trim());
-                        return thisMarkup.replace(/\$\{category\}/gi, currentCategory.query.trim());
+                        thisMarkup = thisMarkup.replace(/\$\{search\}/gi, searchParameter + currentCategory.query.trim().toLowerCase());
+                        return thisMarkup.replace(/\$\{category\}/gi, currentCategory.query.trim().toLowerCase());
                     });
                     jobIndividualListArr.push(currentCategoryJobs.join(""));
                 }
@@ -394,15 +407,18 @@ jQuery(document).ready(function($){
     
             countryJobArr = categorySortFunction(countryJobArr);
             cityJobArr = categorySortFunction(cityJobArr);
-    
+            
             //Sidebar objects that are used to build out the sidebar (checklist based on categories)
             var categoryObj = new sidebarMarkupObj("Category", jobCategoryArr, "category", sidebarChecklistMarkup),
                 countryObj = new sidebarMarkupObj("Country", countryJobArr, "country", sidebarChecklistMarkup),
-                cityObj = new sidebarMarkupObj("City", cityJobArr, "city", sidebarChecklistMarkup);
-    
+                cityObj = new sidebarMarkupObj("City", cityJobArr, "city", sidebarChecklistMarkup),
+                jobObj = new sidebarMarkupObj("Title", jobArr, "title", sidebarChecklistMarkupHidden);
+
             sidebarMarkupArr.push(categoryObj);
             sidebarMarkupArr.push(countryObj);
             sidebarMarkupArr.push(cityObj);
+            //sidebarMarkupArr.push(jobObj);
+
     
             /*
     
@@ -421,7 +437,8 @@ jQuery(document).ready(function($){
                     var categoryArr = arr[num].categoryArr;
                     var sidebarMarkup = arr[num].markup;
                     var categoryMarkup = categoryArr.map(function(key, val){
-                        var currentCategoryMarkup = sidebarMarkup.replace(/\$\{value\}/gi, key.query);
+                        var currentCategoryMarkup = sidebarMarkup.replace(/\$\{value\}/gi, key.query.toLowerCase());
+                        currentCategoryMarkup = currentCategoryMarkup.replace(/\$\{display\}/gi, key.query);
                         return currentCategoryMarkup.replace(/\$\{amount\}/gi, key.amount);
                     });
                     $("<ul/>", {
@@ -438,9 +455,20 @@ jQuery(document).ready(function($){
         });
     } // end else
 
+    var searchExemptRemoval = function(){
+        var currentURL = window.location.href;
+        if ( currentURL.indexOf("?search") === -1 ) {
+            $(".job-list-row").each(function(key, val){
+                $(val).removeClass("job-list-row--search-exempt");
+            });
+        }
+    };
+
     var filteringProcess = function() {
-        //Keep record of whether a checkbox has been selected
-        var checkboxSelected = false;
+
+        var currentURL = window.location.href;
+
+        searchExemptRemoval();
 
         var checkedArr = [],
             filterButtonMarkupArr = [];
@@ -453,7 +481,6 @@ jQuery(document).ready(function($){
         var hideJobRow = function ( arr, num, exception ) {
             if ( num < arr.length ) {
                 if ( !arr.eq(num).hasClass(exception) ) {
-                    //arr.eq(num).css({"display":"none"});
                     arr.eq(num).removeClass("job-list-row--active");
                     arr.eq(num).removeClass("job-list-row--filtered");
                 }
@@ -464,8 +491,7 @@ jQuery(document).ready(function($){
 
         var showJobRow = function ( arr, num, exception ) {
             if ( num < arr.length ) {
-                if ( !arr.eq(num).hasClass("job-list-row--title") ) {
-                    //arr.eq(num).css({"display":"flex"});
+                if ( !arr.eq(num).hasClass(exception) ) {
                     arr.eq(num).addClass("job-list-row--active");
                     arr.eq(num).addClass("job-list-row--filtered");
                 }
@@ -540,6 +566,8 @@ jQuery(document).ready(function($){
                 var filterButtonMarkup = "<span class='job-filter-button job-filter-button--${color}' data-${query}='${filter}'>${filter} <span class='job-filter-button--delete'>x</span></span>";
                 if ( query === "category" ) {
                     filterButtonMarkup = filterButtonMarkup.replace(/\$\{color\}/gi, "blue");
+                } else if ( query === "search" ) {
+                    filterButtonMarkup = filterButtonMarkup.replace(/\$\{color\}/gi, "grey");
                 } else {
                     filterButtonMarkup = filterButtonMarkup.replace(/\$\{color\}/gi, "green");
                 }
@@ -553,7 +581,11 @@ jQuery(document).ready(function($){
 
         var removeFilterProcess = function( arr, num, query ) {
             if ( num < arr.length ) {
-                $("*[data-" + query + "='" + arr[num] + "']").addClass("job-list-row--filtered");
+                $("*[data-" + query + "='" + arr[num] + "']").each(function(key, val){
+                    if ( !$(val).eq(0).hasClass("job-list-row--search-exempt" ) ) {
+                        $(val).eq(0).addClass("job-list-row--filtered");
+                    }
+                });
                 num++;
                 removeFilterProcess(arr, num, query);
             }
@@ -561,7 +593,11 @@ jQuery(document).ready(function($){
 
         var additiveFilterProcess = function( arr, num, query ) {
             if ( num < arr.length ) {
-                $("*[data-" + query + "='" + arr[num] + "']").addClass("job-list-row--active");
+                $("*[data-" + query + "='" + arr[num] + "']").each(function(key, val){
+                    if ( !$(val).eq(0).hasClass("job-list-row--search-exempt" ) ) {
+                        $(val).eq(0).addClass("job-list-row--active");
+                    }
+                });
                 num++;
                 additiveFilterProcess(arr, num, query);
             }
@@ -569,16 +605,14 @@ jQuery(document).ready(function($){
 
         var applyFilters = function( arr, num ) {
             if ( num < arr.length ) {
-                if ( num === 0 && arr[num].query === "category" && arr.length !== 1 ) {
+                if ( num === 0 && arr.length !== 1 ) {
                     additiveFilterProcess( arr[num].arr, 0, arr[num].query );
                     addFilterButton( arr[num].arr, 0, arr[num].query );
                 } else if ( num === 0 && arr[num].query === "category" && arr.length === 1 ) {
                     additiveFilterProcess( arr[num].arr, 0, arr[num].query );
                     removeFilterProcess( arr[num].arr, 0, arr[num].query );
                     addFilterButton( arr[num].arr, 0, arr[num].query );
-                } else if ( num === 0 && ( arr[num].query === "city" || arr[num].query === "country" ) && arr.length !== 1 ) {
-                    additiveFilterProcess( arr[num].arr, 0, arr[num].query );
-                } else if ( num > 0 && ( arr[num].query === "city" || arr[num].query === "country" ) ) {
+                } else if ( num > 0 ) {
                     removeFilterProcess( arr[num].arr, 0, arr[num].query );
                     addFilterButton( arr[num].arr, 0, arr[num].query );
                 } else if ( num === 0 && arr.length === 1 ) {
@@ -592,15 +626,190 @@ jQuery(document).ready(function($){
             $("#job-filter-buttons").html(filterButtonMarkupArr.join(""));
         };
 
+        if ( checkedArr.length === 0 && currentURL.indexOf("?search") === -1 ) {
+            hideJobRow($('.job-list-row'), 0, "job-list-row--title");
+            showJobRow($('.job-list-row'), 0, "job-list-row--title");
+            $("#job-filter-buttons").html("");
+        } else if ( currentURL.indexOf("?search") === -1 ) {
+            applyFilters(checkedArr, 0);
+        } else {
+            searchProcess(currentURL);
+        }
+
+        jobCountUpdate(".job-list-row", ".job-list-row--active.job-list-row--filtered");
+    };
+
+    var searchFilteringProcess = function(search) {
+
+        /*
+        All assets that make the checkbox count work
+        */
+
+        var checkedArr = [],
+            filterButtonMarkupArr = [];
+
+        var checkboxArr = $("*[type='checkbox']");
+
+        var checkedObj = function ( query ) {
+            this.query = query;
+            this.arr = [];
+        };
+
+        var checkboxArrCheck = function ( arr, num, comparison ) {
+            if ( num < arr.length ) {
+                if ( arr[num].query.trim() === comparison.query.trim() ) {
+                    arr[num].arr.push(comparison.arr[0]);
+                } else if ( num + 1 === arr.length && arr[num].query.trim() !== comparison.query.trim() ) {
+                    checkedArr.push(comparison);
+                } else {
+                    num++;
+                    checkboxArrCheck(arr, num, comparison);
+                }
+            }
+        };
+
+        var checkboxCheck = function ( arr, num ) {
+            if ( num < arr.length ) {
+                var checkedCheck = arr.eq(num).prop("checked");
+                //console.log("arr id = " + arr.eq(num).attr("id"));
+                if ( checkedCheck === true && arr.eq(num).attr("id") === undefined ) {
+                    var checkboxValue = arr.eq(num).attr("value").trim(),
+                        categoryCheck = arr.eq(num).parents(".item-list").attr("id").trim();
+                    if ( checkedArr.length > 0 ) {
+                        var newCategory = new checkedObj(categoryCheck);
+                        newCategory.arr.push(checkboxValue);
+                        checkboxArrCheck(checkedArr, 0, newCategory);
+                    } else {
+                        var newCategory = new checkedObj(categoryCheck);
+                        newCategory.arr.push(checkboxValue);
+                        checkedArr.push(newCategory);
+                    }
+                }
+                num++;
+                checkboxCheck(arr, num);
+            }
+        };
+
+        var hideJobRow = function ( arr, num, exception ) {
+            if ( num < arr.length ) {
+                if ( !arr.eq(num).hasClass(exception) && !arr.eq(num).hasClass("job-list-row--search-exempt") ) {
+                    //arr.eq(num).css({"display":"none"});
+                    arr.eq(num).removeClass("job-list-row--active");
+                    arr.eq(num).removeClass("job-list-row--filtered");
+                }
+                num++;
+                hideJobRow(arr, num, exception);
+            }
+        };
+
+        var showJobRow = function ( arr, num, exception ) {
+            if ( num < arr.length ) {
+                if ( !arr.eq(num).hasClass(exception) && !arr.eq(num).hasClass("job-list-row--search-exempt") ) {
+                    //arr.eq(num).css({"display":"flex"});
+                    arr.eq(num).addClass("job-list-row--active");
+                    arr.eq(num).addClass("job-list-row--filtered");
+                }
+                num++;
+                showJobRow(arr, num, exception);
+            }
+        };
+
+        //invocation of hideJobRow
+        hideJobRow($('.job-list-row'), 0, "job-list-row--title");
+
+        //Checks for checked checkboxes
+        checkboxCheck(checkboxArr, 0);
+
+        var addFilterButton = function( arr, num, query ) {
+            var filterButtonMarkup = "<span class='job-filter-button job-filter-button--${color}' data-${query}='${filter}'>${filter} <span class='job-filter-button--delete'>x</span></span>";
+            if ( query === "category" ) {
+                filterButtonMarkup = filterButtonMarkup.replace(/\$\{color\}/gi, "blue");
+            } else if ( query === "search" ) {
+                filterButtonMarkup = filterButtonMarkup.replace(/\$\{color\}/gi, "grey");
+            } else {
+                filterButtonMarkup = filterButtonMarkup.replace(/\$\{color\}/gi, "green");
+            }
+            if ( num < arr.length && typeof arr === "object" ) {
+                filterButtonMarkup = filterButtonMarkup.replace(/\$\{filter\}/gi, arr[num]);
+                filterButtonMarkup = filterButtonMarkup.replace(/\$\{query\}/gi, query);
+                filterButtonMarkupArr.push(filterButtonMarkup);
+                num++;
+                addFilterButton(arr, num, query);
+            } else if ( typeof arr === "string" ) {
+                filterButtonMarkup = filterButtonMarkup.replace(/\$\{filter\}/gi, arr);
+                filterButtonMarkup = filterButtonMarkup.replace(/\$\{query\}/gi, query);
+                filterButtonMarkupArr.push(filterButtonMarkup);
+            }
+        };
+
+        var removeFilterProcess = function( arr, num, query ) {
+            if ( num < arr.length ) {
+                $("*[data-" + query + "='" + arr[num] + "']").each(function(key, val){
+                    if ( !$(val).eq(0).hasClass("job-list-row--search-exempt") ) {
+                        $(val).eq(0).addClass("job-list-row--filtered");
+                    }
+                });
+                num++;
+                removeFilterProcess(arr, num, query);
+            }
+        };
+
+        var additiveFilterProcess = function( arr, num, query ) {
+            if ( num < arr.length ) {
+                $("*[data-" + query + "='" + arr[num] + "']").each(function(key, val){
+                    if ( !$(val).eq(0).hasClass("job-list-row--search-exempt") ) {
+                        $(val).eq(0).addClass("job-list-row--active");
+                    }
+                });
+                num++;
+                additiveFilterProcess(arr, num, query);
+            }
+        };
+
+        var applyFilters = function( arr, num ) {
+            if ( num < arr.length ) {
+                if ( num === 0 && arr.length !== 1 ) {
+                    additiveFilterProcess( arr[num].arr, 0, arr[num].query );
+                    addFilterButton( arr[num].arr, 0, arr[num].query );
+                } else if ( num === 0 && arr[num].query === "category" && arr.length === 1 ) {
+                    additiveFilterProcess( arr[num].arr, 0, arr[num].query );
+                    removeFilterProcess( arr[num].arr, 0, arr[num].query );
+                    addFilterButton( arr[num].arr, 0, arr[num].query );
+                } else if ( num > 0 ) {
+                    removeFilterProcess( arr[num].arr, 0, arr[num].query );
+                    addFilterButton( arr[num].arr, 0, arr[num].query );
+                } else if ( num === 0 && arr.length === 1 ) {
+                    additiveFilterProcess( arr[num].arr, 0, arr[num].query );
+                    removeFilterProcess( arr[num].arr, 0, arr[num].query );
+                    addFilterButton( arr[num].arr, 0, arr[num].query );
+                }
+                num++;
+                applyFilters(arr, num);
+            }
+            $("#job-filter-buttons").html(filterButtonMarkupArr.join(""));
+        };
+
+
+        var addSearchFilterButton = function( term ) {
+            var filterButtonMarkup = "<span class='job-filter-button job-filter-button--grey' data-search='${filter}'>${filter} <span class='job-filter-button--delete'>x</span></span>";
+            filterButtonMarkup = filterButtonMarkup.replace(/\$\{filter\}/gi, term);
+            $("#job-filter-buttons").html(filterButtonMarkup);
+        };
+
         if ( checkedArr.length === 0 ) {
             hideJobRow($('.job-list-row'), 0, "job-list-row--title");
             showJobRow($('.job-list-row'), 0, "job-list-row--title");
             $("#job-filter-buttons").html("");
+            var searchSynth = search.substr(search.indexOf("?search=") + 8, search.length).replace(/\%20/gi, " ");
+            addSearchFilterButton(searchSynth);
         } else {
-            applyFilters( checkedArr, 0);
+            var searchSynth = search.substr(search.indexOf("?search=") + 8, search.length).replace(/\%20/gi, " ");
+            addFilterButton(searchSynth, 0, "search");
+            applyFilters(checkedArr, 0);
         }
 
         jobCountUpdate(".job-list-row", ".job-list-row--active.job-list-row--filtered");
+
     };
 
 
@@ -622,10 +831,10 @@ jQuery(document).ready(function($){
         }
     }
 
-    //Value loop based on Filter Loop
+    //Value loop based on Filter Loop. This is the value being passed for filtering
     var valueCheckboxesLoop = function( arr, num ) {
         if ( num < arr.length ) {
-            $("*[value='" + arr[num].replace(/%20/gi, " ") + "']").eq(0).prop("checked", true);
+            $("*[value='" + arr[num].replace(/%20/gi, " ").toLowerCase() + "']").eq(0).prop("checked", true);
             num++;
             valueCheckboxesLoop(arr, num);
         }
@@ -646,7 +855,7 @@ jQuery(document).ready(function($){
     };
 
     var checkCheckboxLoop = function(passedURL) {
-        if ( pageLoad === false && passedURL.indexOf("?filter=true;") !== -1 ) {
+        if ( pageLoad === false && ( passedURL.indexOf("?filter=true;") !== -1 || passedURL.indexOf("?search") !== -1 ) ) {
             var checkBoxCheck = $("*[type='checkbox']").length;
             ( checkBoxCheck > 0 ) ? pageLoad = true : pageload = false;
             setTimeout(function(){
@@ -654,10 +863,67 @@ jQuery(document).ready(function($){
             }, 500);
         } else if ( pageLoad === true && passedURL.indexOf("?filter=true;") !== -1 ) {
             checkForFilterURL(passedURL);
+        } else if ( pageLoad === true && passedURL.indexOf("?search") !== -1 ) {
+            searchProcess(currentURL);
         }
     };
 
     checkCheckboxLoop(currentURL);
+
+    var searchProcess = function(search) {
+
+        var searchSynth = search.substr(search.indexOf("?search=") + 8, search.length).replace(/\%20/gi, " ");
+
+        //Selects all jobs from jobs list
+        var allJobs = $('.job-list-row');
+
+        //Create regular expression from the search term
+        var regExp = new RegExp(searchSynth,'gi');
+
+        var addFilterButton = function( term ) {
+            var filterButtonMarkup = "<span class='job-filter-button job-filter-button--grey' data-search='${filter}'>${filter} <span class='job-filter-button--delete'>x</span></span>";
+            filterButtonMarkup = filterButtonMarkup.replace(/\$\{filter\}/gi, term);
+            $("#job-filter-buttons").html(filterButtonMarkup);
+        };
+
+        var addHiddenCheckbox = function (term) {
+            var sidebarChecklistMarkupHidden = "<li style='display:none;'><span class='item-title-checkbox'>"
+            + "<input name='${value}' value='${value}' type='checkbox' checked />"
+            + "<label>${display}</label>"
+            + "</span>"
+            + "<span class='item-amount'><span class='item-amount-container'>${amount}</span></span></li>";
+
+            var searchObj = new sidebarMarkupObj("Search", term, "search", sidebarChecklistMarkupHidden);
+        
+            var sidebarMarkupFunc = function(obj) {
+                var sidebarMarkup = obj.markup;
+                var currentCategoryMarkup = sidebarMarkup.replace(/\$\{value\}/gi, obj.categoryArr.toLowerCase());
+                currentCategoryMarkup = currentCategoryMarkup.replace(/\$\{display\}/gi, obj.categoryArr);
+                currentCategoryMarkup.replace(/\$\{amount\}/gi, 1);
+                $("<ul/>", {
+                    html: currentCategoryMarkup
+                }).appendTo("#search");
+            };
+
+            sidebarMarkupFunc(searchObj);
+        };
+
+        addFilterButton(searchSynth);
+        //addHiddenCheckbox(searchSynth);
+
+        $.each(allJobs, function(key, val){
+            var currentJobCheck = $(val).attr("data-search");
+            if ( regExp.test(currentJobCheck) === true ) {
+                $(val).addClass("job-list-row--filtered");
+            } else if ( regExp.test(currentJobCheck) === false ) {
+                $(val).removeClass("job-list-row--filtered");
+                $(val).addClass("job-list-row--search-exempt");
+            }
+        });
+
+        //Updates "Displaying x Entries"
+        jobCountUpdate(".job-list-row", ".job-list-row--active.job-list-row--filtered");
+    };
 
 
     //window.location.href = window.location.href + "?filter=true;category=Engineering;city=San%20Francisco;country=United&20States";
@@ -668,20 +934,62 @@ jQuery(document).ready(function($){
     
     */
 
+
+    $(document).on("submit", "#career-search-form", function(e){
+
+        e.preventDefault();
+
+        var currentURL = window.location.href;
+        var baseURL = currentURL.substr(0, currentURL.indexOf(".com") + 4);
+        window.location.href = baseURL + "/job-listing/?search=" + $("#form-field-name").val().trim();
+        
+        //searchProcess($("#form-field-name"));
+    });
+
     $(document).on("click", "*[type='checkbox']", function(e) {
-        filteringProcess();
+        var currentURL = window.location.href;
+        if ( currentURL.indexOf("?search") === -1 ) {
+            filteringProcess();
+        } else {
+            searchFilteringProcess(currentURL);
+        }
     });
 
     $(document).on("click", ".job-filter-button", function(e) {
         e.preventDefault();
         $.each($(this).data(), function(key, val){
-            $("#" + key).find("*[value='" + val + "']").prop("checked", false);
+            if ( key.trim() !== "search" ) {
+                $("#" + key).find("*[value='" + val + "']").prop("checked", false);
+            } else {
+                history.pushState(null, null, "/job-listing/");
+            }
         });
-        filteringProcess();
+        var currentURL = window.location.href;
+        if ( currentURL.indexOf("?search") === -1 ) {
+            filteringProcess();
+        } else {
+            searchFilteringProcess(currentURL);
+        }
     });
 
+    /*
+    
+    Search Auto-Fill: work on to make functional soon
+
     $(document).on("input", "#form-field-name", function(e){
+        var regExp = new RegExp($("#form-field-name").val(),'gi');
+        $.ajax({url:"https://boards-api.greenhouse.io/v1/boards/anaplan/departments/"})
+        .done(function(data){
+            $.each(data.departments, function(key,val){
+                console.log(val);
+            });
+        })
+        .error(function(){
+            console.log('Error with ajax request. URL not valid.');
+        });
         console.log($("#form-field-name").val());
     });
+
+    */
 
 });

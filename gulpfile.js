@@ -1,5 +1,7 @@
 var gulp = require('gulp'),
-	minify = require('gulp-minify');
+	minify = require('gulp-minify'),
+	watch = require('gulp-watch'),
+	log = require('fancy-log');
 
 
 
@@ -13,14 +15,17 @@ var distributionJSPath = 'dist/js/';
 //Individual Tasks
 
 gulp.task('jsMinify', function(){
+	console.log(productionJSPath);
 	return gulp.src(productionJSPath)
+		.pipe(watch(productionJSPath))
 		.pipe(minify({
 			ext:{
 				src: '.js',
 				min: '-min.js'
 			}
 		}))
-		.pipe(gulp.dest(distributionJSPath));
+		.on('pipe', function(){ log('Done!'); })
+		.pipe(gulp.dest(distributionJSPath))
 });
 
 //Grouped Tasks
