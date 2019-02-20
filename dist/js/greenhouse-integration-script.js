@@ -812,7 +812,6 @@ jQuery(document).ready(function($){
 
     };
 
-
     /*
 
     When a box is checked, check which boxes are checked and which values need to be filtered

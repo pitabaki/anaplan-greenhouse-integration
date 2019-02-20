@@ -28,5 +28,18 @@ gulp.task('jsMinify', function(){
 		.pipe(gulp.dest(distributionJSPath))
 });
 
+gulp.task('jsTask', function(){
+	console.log(productionJSPath);
+	return gulp.src(productionJSPath)
+		.pipe(minify({
+			ext:{
+				src: '.js',
+				min: '-min.js'
+			}
+		}))
+		.on('pipe', function(){ log('Done!'); })
+		.pipe(gulp.dest(distributionJSPath))
+});
+
 //Grouped Tasks
 gulp.task('god', ['jsMinify']);
