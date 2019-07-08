@@ -1,5 +1,5 @@
 /**
- * Plugin Name:       Anaplan Menu to JSON
+ * Plugin Name:       Anaplan Greenhouse Integration
  * Plugin URI:        https://www.anaplan.com/
  * Description:       JS to work with Greenhouse API
  * Version:           1.0.1
@@ -970,6 +970,65 @@ jQuery(document).ready(function($){
             searchFilteringProcess(currentURL);
         }
     });
+
+    var allImages=$("img");
+    var alliFrames=$("iframe");
+
+    var dataSrcToSrc = function(arr, num) {
+      if ( num < arr.length ) {
+        if ( parseFloat( $(window).scrollTop() + window.innerHeight ) > arr.eq(num).offset().top - 200 ) {
+            var src = arr.eq(num).attr("data-src");
+            arr.eq(num).attr('src', src);
+            arr.eq(num).css("opacity", "1");
+        }
+        num++;
+        dataSrcToSrc(arr, num);
+      }
+    };
+
+    /*background image replace*/
+
+    var dataBgSrctoBgImg = function( arr, num, applyTo ) {
+        if ( num < arr.length) {
+            if ( parseFloat( $(window).scrollTop() + window.innerHeight ) > arr.eq(num).offset().top - 200 ) {
+                var backgroundSrc = arr.eq(num).attr("data-src");
+                if ( typeof applyTo !== "undefined") {
+                    arr.eq(num).find(applyTo).css({
+                        "background-image":"url("+backgroundSrc+")",
+                        "background-position":"background-position",
+                        "background-size":"cover"
+                    });
+                } else {
+                    arr.eq(num).css({
+                        "background-image":"url("+backgroundSrc+")",
+                        "background-position":"background-position",
+                        "background-size":"cover"
+                    });
+                }
+            }
+            num++;
+            dataBgSrctoBgImg(arr, num, applyTo);
+        }
+    };
+
+
+    dataSrcToSrc(allImages, 0);
+    dataSrcToSrc(alliFrames, 0);
+    dataBgSrctoBgImg($(".flip-card-front"), 0, ".elementor-flip-box__front");
+    dataBgSrctoBgImg($(".background-image-elements"), 0);
+
+    console.log("Script update March 7, 2019");
+
+    $(window).scroll( function() {
+        //console.log("window scrolled");
+        var allImages=$("img");
+        var alliFrames=$("iframe");
+        dataSrcToSrc(allImages, 0);
+        dataSrcToSrc(alliFrames, 0);
+        dataBgSrctoBgImg($(".flip-card-front"), 0, ".elementor-flip-box__front");
+        dataBgSrctoBgImg($(".background-image-elements"), 0);
+    });
+
 
     /*
     

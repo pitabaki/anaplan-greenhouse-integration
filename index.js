@@ -23,6 +23,7 @@ watch(watchPath, { recursive: true }, function(evt, name) {
     console.log('%s changed.', name);
 });
 
+/*
 sftp.connect({
     host: 'anaplancareer.sftp.wpengine.com',
     port: '2222',
@@ -36,4 +37,4 @@ sftp.connect({
     });
 }).catch((err) => {
     console.log(err, 'catch error');
-});
+});*/
