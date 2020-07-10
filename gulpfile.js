@@ -15,7 +15,6 @@ var distributionJSPath = 'dist/js/';
 //Individual Tasks
 
 gulp.task('jsMinify', function(){
-	console.log(productionJSPath);
 	return gulp.src(productionJSPath)
 		.pipe(watch(productionJSPath))
 		.pipe(minify({
@@ -29,7 +28,6 @@ gulp.task('jsMinify', function(){
 });
 
 gulp.task('jsTask', function(){
-	console.log(productionJSPath);
 	return gulp.src(productionJSPath)
 		.pipe(minify({
 			ext:{
@@ -41,5 +39,4 @@ gulp.task('jsTask', function(){
 		.pipe(gulp.dest(distributionJSPath))
 });
 
-//Grouped Tasks
-gulp.task('god', ['jsMinify']);
+gulp.task('god', gulp.series('jsMinify'));

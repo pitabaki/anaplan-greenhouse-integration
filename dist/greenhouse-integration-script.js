@@ -1,4 +1,4 @@
-/*!*
+/**
  * Plugin Name:       Anaplan Greenhouse Integration
  * Plugin URI:        https://www.anaplan.com/
  * Description:       JS to work with Greenhouse API
@@ -38,7 +38,7 @@ jQuery(document).ready(function($){
     };
 
     var swapJobFigures = function(jobObj){
-        $('*[data-job-type="' + jobObj.query + '"]').html(jobObj.amount);     
+        $('*[data-job-type="' + jobObj.query + '"]').html(jobObj.amount);
     };
 
     var sidebarMarkupArr = [];
@@ -54,6 +54,7 @@ jQuery(document).ready(function($){
             $("#job-list-total").html(displayMarkup.replace(/\$\{amount\}/gi, "<strong>" + totalActiveJobs + "</strong> of <strong>" + totalInactiveJobs + "</strong>"));
         }
     };
+
 
     /*
     
@@ -83,12 +84,9 @@ jQuery(document).ready(function($){
             $.ajax({
                 url: greenhouseJobURL
             }).done(function(data) {
-                console.log(data.content);
                 var thisContent = data.content.replace(/&lt;/gi, "<");
                 thisContent = thisContent.replace(/&gt;/gi, ">");
                 thisContent = thisContent.replace(/&quot;/gi, "\"");
-                thisContent = thisContent.replace(/\&amp\;nbsp\;/gi, " ");
-                console.log(thisContent);
                 $("#job-title").find("h1").html(data.title);
                 $("#job-title-content").find("h3").html(data.title);
                 $("#job-location").find("h3").html(data.location.name.trim());
@@ -114,9 +112,9 @@ jQuery(document).ready(function($){
                     metaTag.content = metaDescription;
                     $("head").append(metaTag);
                     var metaCycle = function ( arr, num ) {
-                        //console.log("metaCycle");
+                        console.log("metaCycle");
                         if ( arr.length > num ) {
-                            //console.log(arr.eq(num));
+                            console.log(arr.eq(num));
                             num++;
                             metaCycle(arr, num);
                         }
@@ -248,7 +246,7 @@ jQuery(document).ready(function($){
         */
 
         if ( currentURL.indexOf("/engineering") !== -1 ) {
-            currentURL = currentURL + "?filter=true;category=Eng%20Ops&Cloud%20Platform%20Engineering&Experience%20and%20Applications%20Engineering&Product%20Management%20and%20User%20Experience&Product,%20UX,%20and%20Engineering&Planning%20AI";
+            currentURL = currentURL + "?filter=true;category=Engineering";
         } else if ( currentURL.indexOf("/sales") !== -1 ) {
             currentURL = currentURL + "?filter=true;category=Field%20Sales&Pre-Sales&Sales%20Development";
         }
@@ -262,10 +260,7 @@ jQuery(document).ready(function($){
         $.getJSON("https://boards-api.greenhouse.io/v1/boards/anaplan/departments/", function(data){
             var totalJobs = 0,
                 engineeringJobs = 0,
-                salesJobs = 0,
-                preSalesJobs = 0,
-                fieldSalesJobs = 0,
-                customerSuccessJobs = 0;
+                salesJobs = 0;
     
             var jobFigureArr = [],
                 countryJobArr = [],
@@ -405,39 +400,8 @@ jQuery(document).ready(function($){
                 }
     
                 totalJobs += val.jobs.length;
-
-                var engineeringRegEx = /engineering|eng|experience|ai/gi,
-                    salesRegEx = /sales/gi;
-
-                console.log( "val.name = " + val.name );
-                if ( engineeringRegEx.test(val.name) ) {
-                    engineeringJobs += val.jobs.length;
-                    var currentJob = new jobFigureObj('engineering', engineeringJobs);
-                    jobFigureArr.push(currentJob);
-                } else if ( salesRegEx.test(val.name) ) {
-                    salesJobs += val.jobs.length;
-                    var currentJob = new jobFigureObj('sales', salesJobs);
-                    jobFigureArr.push(currentJob);
-                }
-
-                if ( "Customer Success" === val.name.trim() ) {
-                    customerSuccessJobs += val.jobs.length;
-                    var currentJob = new jobFigureObj('customer success', customerSuccessJobs);
-                    jobFigureArr.push(currentJob);
-                } else if ( "Pre-Sales" === val.name.trim() ) {
-                    preSalesJobs += val.jobs.length;
-                    var currentJob = new jobFigureObj('pre-sales', preSalesJobs);
-                    jobFigureArr.push(currentJob);
-                } else if ( "Field Sales" === val.name.trim() ) {
-                    fieldSalesJobs += val.jobs.length;
-                    var currentJob = new jobFigureObj('field sales', fieldSalesJobs);
-                    jobFigureArr.push(currentJob);
-                }
-
-                /*
                 switch ( val.name ) {
                     case "Engineering":
-                        console.log("Engineering Jobs = " + val.jobs.length);
                         engineeringJobs += val.jobs.length;
                         var currentJob = new jobFigureObj('engineering', engineeringJobs);
                         jobFigureArr.push(currentJob);
@@ -447,7 +411,7 @@ jQuery(document).ready(function($){
                         var currentJob = new jobFigureObj('sales', salesJobs);
                         jobFigureArr.push(currentJob);
                         break;
-                }*/
+                }
     
             });
     
@@ -944,7 +908,7 @@ jQuery(document).ready(function($){
         //Create regular expression from the search term
         var regExp = new RegExp(searchSynth,'gi');
 
-        //console.log("searchSynth = " + searchSynth);
+        console.log("searchSynth = " + searchSynth);
 
         var addFilterButton = function( term ) {
             var filterButtonMarkup = "<span class='job-filter-button job-filter-button--grey' data-search='${filter}'>${filter} <span class='job-filter-button--delete'>x</span></span>";
@@ -1087,7 +1051,7 @@ jQuery(document).ready(function($){
     var today = new Date();
     var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-    console.log("Script update July 10th, 2020");
+    console.log("Script update October 22nd, 2019");
 
     $(window).scroll( function() {
         //console.log("window scrolled");
@@ -1102,6 +1066,7 @@ jQuery(document).ready(function($){
 
     /*
     
+    Search Auto-Fill: work on to make functional soon
 
     $(document).on("input", "#form-field-name", function(e){
         var regExp = new RegExp($("#form-field-name").val(),'gi');

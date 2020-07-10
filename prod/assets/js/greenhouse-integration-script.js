@@ -1,8 +1,8 @@
-/**
+/*!*
  * Plugin Name:       Anaplan Greenhouse Integration
  * Plugin URI:        https://www.anaplan.com/
  * Description:       JS to work with Greenhouse API
- * Version:           1.0.1
+ * Version:           1.2.1
  * Author:            Peter Berki
  * Author URI:        https://kumadev.com
  * License:           GPL-2.0+
@@ -11,7 +11,6 @@
  * Domain Path:       /languages
  * Test URL Path:     window.location.href + ?filter=true;category=Engineering;city=San%20Francisco;country=United&20States
  */
-
 jQuery(document).ready(function($){
 
 
@@ -39,7 +38,7 @@ jQuery(document).ready(function($){
     };
 
     var swapJobFigures = function(jobObj){
-        $('*[data-job-type="' + jobObj.query + '"]').html(jobObj.amount);
+        $('*[data-job-type="' + jobObj.query + '"]').html(jobObj.amount);     
     };
 
     var sidebarMarkupArr = [];
@@ -55,7 +54,6 @@ jQuery(document).ready(function($){
             $("#job-list-total").html(displayMarkup.replace(/\$\{amount\}/gi, "<strong>" + totalActiveJobs + "</strong> of <strong>" + totalInactiveJobs + "</strong>"));
         }
     };
-
 
     /*
     
@@ -85,15 +83,48 @@ jQuery(document).ready(function($){
             $.ajax({
                 url: greenhouseJobURL
             }).done(function(data) {
+                console.log(data.content);
                 var thisContent = data.content.replace(/&lt;/gi, "<");
                 thisContent = thisContent.replace(/&gt;/gi, ">");
                 thisContent = thisContent.replace(/&quot;/gi, "\"");
+                thisContent = thisContent.replace(/\&amp\;nbsp\;/gi, " ");
+                console.log(thisContent);
                 $("#job-title").find("h1").html(data.title);
                 $("#job-title-content").find("h3").html(data.title);
                 $("#job-location").find("h3").html(data.location.name.trim());
                 $("#job-location-content").find("h5").html(data.location.name.trim());
                 $("#job-content").html(thisContent);
                 $("#job-greenhouse-href").attr("href", data.absolute_url);
+                String.prototype.tagRemoval = function () {
+                    var tagsRemoved = this.replace(/(\<strong\>.*\<\/strong\>)|(\<strong\>)|(\<\/strong\>)/gi, "");
+                    tagsRemoved = tagsRemoved.replace(/(\<ul\>)|(\<\/ul\>)|(\<li\>)|(\<\/li\>)|(\<p\>)|(\<\/p\>)|(\<h1\>)|(\<h2\>)|(\<h3\>)|(\<\/h3\>)|(\<\/h1\>)|(\<\/h2\>)/gi, "");
+                    return tagsRemoved;
+                };
+                String.prototype.trunc = function ( n, useWordBoundary ) {
+                    var isTooLong = this.length > n,
+                        s_ = isTooLong ? this.substr(0,n-1) : this;
+                    s_ = (useWordBoundary && isTooLong) ? s_.substr(0,s_.lastIndexOf(' ')) : s_ + " ...";
+                    return  isTooLong ? s_ : s_;
+                };
+                var metaDescription = thisContent.tagRemoval().trunc(240, false);
+                if ( metaDescription.length > 1 ) {
+                    $('meta[name=description]').remove();
+                    var metaTag = document.createElement("meta");
+                    metaTag.name = "description";
+                    metaTag.content = metaDescription;
+                    $("head").append(metaTag);
+                    var metaCycle = function ( arr, num ) {
+                        //console.log("metaCycle");
+                        if ( arr.length > num ) {
+                            //console.log(arr.eq(num));
+                            num++;
+                            metaCycle(arr, num);
+                        }
+                    };
+                    metaCycle($("meta"), 0);
+                    //console.log(metaDescription);
+                }
+
 
                 var itFeaturePath = "/wp-content/uploads/2018/12/solution_IT_feature.jpg";
                 var salesFeaturePath = "/wp-content/uploads/2018/12/solution_sales_feature.jpg";
@@ -217,7 +248,7 @@ jQuery(document).ready(function($){
         */
 
         if ( currentURL.indexOf("/engineering") !== -1 ) {
-            currentURL = currentURL + "?filter=true;category=Engineering";
+            currentURL = currentURL + "?filter=true;category=Eng%20Ops&Cloud%20Platform%20Engineering&Experience%20and%20Applications%20Engineering&Product%20Management%20and%20User%20Experience&Product,%20UX,%20and%20Engineering&Planning%20AI";
         } else if ( currentURL.indexOf("/sales") !== -1 ) {
             currentURL = currentURL + "?filter=true;category=Field%20Sales&Pre-Sales&Sales%20Development";
         }
@@ -231,7 +262,10 @@ jQuery(document).ready(function($){
         $.getJSON("https://boards-api.greenhouse.io/v1/boards/anaplan/departments/", function(data){
             var totalJobs = 0,
                 engineeringJobs = 0,
-                salesJobs = 0;
+                salesJobs = 0,
+                preSalesJobs = 0,
+                fieldSalesJobs = 0,
+                customerSuccessJobs = 0;
     
             var jobFigureArr = [],
                 countryJobArr = [],
@@ -371,8 +405,39 @@ jQuery(document).ready(function($){
                 }
     
                 totalJobs += val.jobs.length;
+
+                var engineeringRegEx = /engineering|eng|experience|ai/gi,
+                    salesRegEx = /sales/gi;
+
+                console.log( "val.name = " + val.name );
+                if ( engineeringRegEx.test(val.name) ) {
+                    engineeringJobs += val.jobs.length;
+                    var currentJob = new jobFigureObj('engineering', engineeringJobs);
+                    jobFigureArr.push(currentJob);
+                } else if ( salesRegEx.test(val.name) ) {
+                    salesJobs += val.jobs.length;
+                    var currentJob = new jobFigureObj('sales', salesJobs);
+                    jobFigureArr.push(currentJob);
+                }
+
+                if ( "Customer Success" === val.name.trim() ) {
+                    customerSuccessJobs += val.jobs.length;
+                    var currentJob = new jobFigureObj('customer success', customerSuccessJobs);
+                    jobFigureArr.push(currentJob);
+                } else if ( "Pre-Sales" === val.name.trim() ) {
+                    preSalesJobs += val.jobs.length;
+                    var currentJob = new jobFigureObj('pre-sales', preSalesJobs);
+                    jobFigureArr.push(currentJob);
+                } else if ( "Field Sales" === val.name.trim() ) {
+                    fieldSalesJobs += val.jobs.length;
+                    var currentJob = new jobFigureObj('field sales', fieldSalesJobs);
+                    jobFigureArr.push(currentJob);
+                }
+
+                /*
                 switch ( val.name ) {
                     case "Engineering":
+                        console.log("Engineering Jobs = " + val.jobs.length);
                         engineeringJobs += val.jobs.length;
                         var currentJob = new jobFigureObj('engineering', engineeringJobs);
                         jobFigureArr.push(currentJob);
@@ -382,7 +447,7 @@ jQuery(document).ready(function($){
                         var currentJob = new jobFigureObj('sales', salesJobs);
                         jobFigureArr.push(currentJob);
                         break;
-                }
+                }*/
     
             });
     
@@ -872,12 +937,14 @@ jQuery(document).ready(function($){
     var searchProcess = function(search) {
 
         var searchSynth = search.substr(search.indexOf("?search=") + 8, search.length).replace(/\%20/gi, " ");
-
+        searchSynth = decodeURIComponent(searchSynth);
         //Selects all jobs from jobs list
         var allJobs = $('.job-list-row');
 
         //Create regular expression from the search term
         var regExp = new RegExp(searchSynth,'gi');
+
+        //console.log("searchSynth = " + searchSynth);
 
         var addFilterButton = function( term ) {
             var filterButtonMarkup = "<span class='job-filter-button job-filter-button--grey' data-search='${filter}'>${filter} <span class='job-filter-button--delete'>x</span></span>";
@@ -976,7 +1043,7 @@ jQuery(document).ready(function($){
 
     var dataSrcToSrc = function(arr, num) {
       if ( num < arr.length ) {
-        if ( parseFloat( $(window).scrollTop() + window.innerHeight ) > arr.eq(num).offset().top - 200 ) {
+        if ( parseFloat( $(window).scrollTop() + window.innerHeight ) > arr.eq(num).offset().top - 200 && arr.eq(num).attr('src') === undefined ) {
             var src = arr.eq(num).attr("data-src");
             arr.eq(num).attr('src', src);
             arr.eq(num).css("opacity", "1");
@@ -1017,7 +1084,10 @@ jQuery(document).ready(function($){
     dataBgSrctoBgImg($(".flip-card-front"), 0, ".elementor-flip-box__front");
     dataBgSrctoBgImg($(".background-image-elements"), 0);
 
-    console.log("Script update March 7, 2019");
+    var today = new Date();
+    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+    console.log("Script update July 10th, 2020");
 
     $(window).scroll( function() {
         //console.log("window scrolled");
@@ -1032,7 +1102,6 @@ jQuery(document).ready(function($){
 
     /*
     
-    Search Auto-Fill: work on to make functional soon
 
     $(document).on("input", "#form-field-name", function(e){
         var regExp = new RegExp($("#form-field-name").val(),'gi');
