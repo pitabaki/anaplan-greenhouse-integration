@@ -88,6 +88,7 @@ jQuery(document).ready(function($){
                 thisContent = thisContent.replace(/&gt;/gi, ">");
                 thisContent = thisContent.replace(/&quot;/gi, "\"");
                 thisContent = thisContent.replace(/\&amp\;nbsp\;/gi, " ");
+                thisContent = thisContent.replace(/\&amp\;amp\;/gi, "&");
                 console.log(thisContent);
                 $("#job-title").find("h1").html(data.title);
                 $("#job-title-content").find("h3").html(data.title);
@@ -1087,7 +1088,7 @@ jQuery(document).ready(function($){
     var today = new Date();
     var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-    console.log("Script update July 10th, 2020");
+    console.log("Script update August 4th, 2020");
 
     $(window).scroll( function() {
         //console.log("window scrolled");

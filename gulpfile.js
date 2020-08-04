@@ -38,5 +38,3 @@ gulp.task('jsTask', function(){
 		.on('pipe', function(){ log('Done!'); })
 		.pipe(gulp.dest(distributionJSPath))
 });
-
-gulp.task('god', gulp.series('jsMinify'));
