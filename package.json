@@ -3,19 +3,23 @@
   "version": "1.0.0",
   "main": "gulpfile.js",
   "scripts": {
-    "start": "gulp jsMinify",
+    "start": "webpack ./prod/assets/js/greenhouse-integration-script.js -o ./dist/greenhouse-integration/js/greenhouse-integration-script-min.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Peter Berki",
   "license": "ISC",
-  "dependencies": {
-    "gulp": "^4.0.2",
-    "gulp-concat": "^2.6.1",
-    "gulp-minify": "^3.1.0"
-  },
   "devDependencies": {
-    "fancy-log": "^1.3.3",
-    "gulp-watch": "^5.0.1"
+    "@babel/core": "7.10.5",
+    "@babel/preset-env": "7.10.4",
+    "babel-loader": "8.1.0",
+    "webpack": "4.43.0",
+    "webpack-cli": "3.3.11"
+  },
+  "dependencies": {
+    "@babel/register": "7.10.5",
+    "css-loader": "3.5.3",
+    "file-loader": "6.0.0",
+    "url-loader": "4.1.0"
   },
   "description": "",
   "repository": {

@@ -1,6 +1,6 @@
 /*!*
  * Plugin Name:       Anaplan Greenhouse Integration
- * Plugin URI:        https://www.anaplan.com/
+ * Plugin URI:        https://careers.anaplan.com/
  * Description:       JS to work with Greenhouse API
  * Version:           1.2.1
  * Author:            Peter Berki
