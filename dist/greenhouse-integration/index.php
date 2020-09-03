@@ -2,9 +2,8 @@
 
 	/**
 	 * Plugin Name:       Greenhouse Integration
-	 * Plugin URI:        https://careers.anaplan.com/
-	 * Description:       Integrates Greenhouse API with Anaplan.com — Originally built for Astra + Elementor
-	 * Version:           1.0.1
+	 * Description:       Integrates Greenhouse API with Anaplan.com — Originally built for Astra + Elementor. Now designed for Voyager.
+	 * Version:           1.5.1
 	 * Author:            Peter Berki
 	 * Author URI:        https://kumadev.com
 	 */
@@ -13,10 +12,11 @@
         die;
     }
 
-    function greenhouse_script() {
-        wp_enqueue_script('greenhouse-integration', dirname(__FILE__) . '/js/greenhouse-integration-script-min.js', array('jquery'), '1.2.1', true);
-    }
+    function greenhouse_styles_scripts() {
+		wp_enqueue_style('greenhouse-integration-style', plugin_dir_url(__FILE__) . 'css/greenhouse-integration-style.css');
+        wp_enqueue_script('greenhouse-integration', plugin_dir_url(__FILE__) . 'js/greenhouse-integration-script-min.js', array('jquery'), '1.2.1', true);
+	}
 
-    add_action( 'wp_enqueue_scripts', 'greenhouse_script' );
+	add_action( 'wp_enqueue_scripts', 'greenhouse_styles_scripts' );
 
 ?>

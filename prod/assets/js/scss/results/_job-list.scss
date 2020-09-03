@@ -1,0 +1,40 @@
+
+.job-list-container {
+    text-transform: capitalize;
+}
+.job-list-row {
+    display: none;
+    padding: 10px 15px;
+    border-top: 1px solid #d5d5d5;
+}
+.job-list-row.job-list-row--active.job-list-row--filtered {
+    display: flex;
+}
+.job-list-row--title,
+.job-list-row--total{
+    display: flex;
+    padding: 10px 15px;
+    border-top: 0;
+    border-bottom: 1px solid #d5d5d5;
+}
+.job-list-row--total {
+    border: none;
+}
+.job-list-column {
+    padding-right: 10px;
+}
+.job-list-row--total p,
+.job-list-column p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 20px;
+}
+.job-list-column p strong {
+    color: #0b2265;
+}
+.job-list-column.job-list-column--large {
+    width: 60%;
+}
+.job-list-column.job-list-column--small {
+    width: 20%;
+}

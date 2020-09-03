@@ -1,0 +1,14 @@
+.job-filter-container {
+    display: grid;
+    grid-template-areas: "filters break results";
+    grid-template-columns: 3fr 0.5fr 8.5fr;
+
+    aside {
+        grid-area: filters;
+    }
+
+    article {
+        grid-area: results;
+    }
+
+}

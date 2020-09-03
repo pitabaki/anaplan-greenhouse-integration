@@ -1,3 +1,6 @@
+const path = require("path");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
 module.exports = {
   mode: 'production',
   optimization: {
@@ -6,6 +9,19 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.scss$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              implementation: require('sass')
+            },
+          }
+        ],
+        include: path.resolve(__dirname, '../')
+      }, {
         test: /\.m?js$/,
         exclude: /(node_modules|bower_components)/,
         use: {
@@ -16,5 +32,13 @@ module.exports = {
         }
       },
     ]
-  }
+  },
+  plugins: [
+    new MiniCssExtractPlugin({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
+      filename: '../css/greenhouse-integration-style.css',
+      chunkFilename: '[id].css',
+    }),
+  ]
 };

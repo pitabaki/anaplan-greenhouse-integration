@@ -11,6 +11,7 @@
  * Domain Path:       /languages
  * Test URL Path:     window.location.href + ?filter=true;category=Engineering;city=San%20Francisco;country=United&20States
  */
+import "./scss/index.scss";
 jQuery(document).ready(function($){
 
 
@@ -1005,7 +1006,7 @@ jQuery(document).ready(function($){
     $(document).on("submit", "#career-search-form", function(e){
 
         e.preventDefault();
-
+        
         var currentURL = window.location.href;
         var baseURL = currentURL.substr(0, currentURL.indexOf(".com") + 4);
         window.location.href = baseURL + "/job-listing/?search=" + $("#form-field-name").val().trim();
