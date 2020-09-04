@@ -25,7 +25,7 @@
     "sass-loader": "8.0.2",
     "style-loader": "1.2.1"
   },
-  "description": "",
+  "description": "Plugin that integrates Greenhouse into Anaplan's Wordpress-based career site.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pitabaki/anaplan-greenhouse-integration.git"
