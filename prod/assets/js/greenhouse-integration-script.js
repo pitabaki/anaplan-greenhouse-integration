@@ -84,19 +84,18 @@ jQuery(document).ready(function($){
             $.ajax({
                 url: greenhouseJobURL
             }).done(function(data) {
-                console.log(data.content);
                 var thisContent = data.content.replace(/&lt;/gi, "<");
                 thisContent = thisContent.replace(/&gt;/gi, ">");
                 thisContent = thisContent.replace(/&quot;/gi, "\"");
                 thisContent = thisContent.replace(/\&amp\;nbsp\;/gi, " ");
                 thisContent = thisContent.replace(/\&amp\;amp\;/gi, "&");
                 console.log(thisContent);
-                $("#job-title").find("h1").html(data.title);
+                $("#job-title").html(data.title);
                 $("#job-title-content").find("h3").html(data.title);
-                $("#job-location").find("h3").html(data.location.name.trim());
+                $("#job-location").html(data.location.name.trim());
                 $("#job-location-content").find("h5").html(data.location.name.trim());
                 $("#job-content").html(thisContent);
-                $("#job-greenhouse-href").attr("href", data.absolute_url);
+                $("#job-greenhouse-href").attr("href", data.absolute_url + "#application");
                 String.prototype.tagRemoval = function () {
                     var tagsRemoved = this.replace(/(\<strong\>.*\<\/strong\>)|(\<strong\>)|(\<\/strong\>)/gi, "");
                     tagsRemoved = tagsRemoved.replace(/(\<ul\>)|(\<\/ul\>)|(\<li\>)|(\<\/li\>)|(\<p\>)|(\<\/p\>)|(\<h1\>)|(\<h2\>)|(\<h3\>)|(\<\/h3\>)|(\<\/h1\>)|(\<\/h2\>)/gi, "");
@@ -275,6 +274,8 @@ jQuery(document).ready(function($){
                 jobArr = [],
                 jobCategoryArr = [],
                 jobIndividualListArr = [];
+
+            console.log(data);
     
             var sidebarChecklistMarkup = "<li><span class='item-title-checkbox'>"
             + "<input name='${value}' value='${value}' type='checkbox' />"
@@ -885,8 +886,6 @@ jQuery(document).ready(function($){
 
     */
 
-    var pageLoad = false;
-
     //Filter loop based on URL
     var filterCategoryLoop = function (arr, num) {
         if ( num < arr.length ) {
@@ -914,22 +913,27 @@ jQuery(document).ready(function($){
             //Split URL into array of filters
             var checkCategory = newURL.substr(0, newURL.length).split(";");
 
+            console.log("Check Category " + checkCategory);
+
             //Loop through filters
             filterCategoryLoop(checkCategory, 0);
             filteringProcess();
         }
     };
 
+    let PageLoadCheck = false;
+
     var checkCheckboxLoop = function(passedURL) {
-        if ( pageLoad === false && ( passedURL.indexOf("?filter=true;") !== -1 || passedURL.indexOf("?search") !== -1 ) ) {
+        
+        if ( PageLoadCheck === false && ( passedURL.indexOf("?filter=true;") !== -1 || passedURL.indexOf("?search") !== -1 ) ) {
             var checkBoxCheck = $("*[type='checkbox']").length;
-            ( checkBoxCheck > 0 ) ? pageLoad = true : pageload = false;
+            ( checkBoxCheck > 0 ) ? PageLoadCheck = true : PageLoadCheck = false;
             setTimeout(function(){
                 checkCheckboxLoop(passedURL);
             }, 500);
-        } else if ( pageLoad === true && passedURL.indexOf("?filter=true;") !== -1 ) {
+        } else if ( PageLoadCheck === true && passedURL.indexOf("?filter=true;") !== -1 ) {
             checkForFilterURL(passedURL);
-        } else if ( pageLoad === true && passedURL.indexOf("?search") !== -1 ) {
+        } else if ( PageLoadCheck === true && passedURL.indexOf("?search") !== -1 ) {
             searchProcess(currentURL);
         }
     };

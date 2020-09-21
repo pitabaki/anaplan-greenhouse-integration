@@ -3,6 +3,13 @@
     grid-template-areas: "filters break results";
     grid-template-columns: 3fr 0.5fr 8.5fr;
 
+    @include breakpoint(tablet-max) {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
     aside {
         grid-area: filters;
     }

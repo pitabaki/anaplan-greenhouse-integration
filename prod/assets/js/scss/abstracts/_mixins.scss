@@ -1,0 +1,144 @@
+@mixin animation($var) {
+	-webkit-animation: $var;
+	-moz-animation: $var;
+	animation: $var;
+}
+@mixin transform($var) {
+	-webkit-transform: $var;
+	-moz-transform: $var;
+	transform: $var;
+}
+@mixin box-reset {
+	box-shadow: 0 0 0 0 !important;
+}
+@mixin border-radius($var) {	
+	-webkit-border-radius: $var !important;
+	-moz-border-radius: $var !important;
+	border-radius: $var !important;
+}
+@mixin breakpoint($point) {
+	@if $point == desktop {
+		@media (min-width: 1200px) { @content; }
+	}
+	@else if $point == laptop {
+		@media (min-width: 992px) { @content; }
+	}
+	@else if $point == laptop-max {
+		@media (max-width: 992px) { @content; }
+	}
+	@else if $point == tablet {
+		@media (min-width: 768px) { @content; }
+	}
+	@else if $point == tablet-max {
+		@media (max-width: 768px) { @content; }
+	}
+	@else if $point == phablet {
+		@media (min-width: 576px) { @content; }
+	}
+	@else if $point == mobile {
+		@media (max-width: 575px) { @content; }
+	}
+}
+@mixin gradients($direction, $first_color, $second_color) {
+	@if $direction == 'right' {
+		background: $first_color; /* For browsers that do not support gradients */
+	    background: -webkit-linear-gradient(left, $first_color, $second_color); /* For Safari 5.1 to 6.0 */
+	    background: -o-linear-gradient(right, $first_color, $second_color); /* For Opera 11.1 to 12.0 */
+	    background: -moz-linear-gradient(right, $first_color, $second_color); /* For Firefox 3.6 to 15 */
+	    background: linear-gradient(to right, $first_color, $second_color); /* Standard syntax */	
+	} @else if $direction == 'top-right' {
+		background: $first_color; /* For browsers that do not support gradients */
+	    background: -webkit-linear-gradient(45deg, $first_color, $second_color); /* For Safari 5.1 to 6.0 */
+	    background: -o-linear-gradient(45deg, $first_color, $second_color); /* For Opera 11.1 to 12.0 */
+	    background: -moz-linear-gradient(45deg, $first_color, $second_color); /* For Firefox 3.6 to 15 */
+	    background: linear-gradient(45deg, $first_color, $second_color); /* Standard syntax */	
+	} @else if $direction == 'top' {
+		background: $first_color; /* For browsers that do not support gradients */
+	    background: -webkit-linear-gradient($first_color, $second_color); /* For Safari 5.1 to 6.0 */
+	    background: -o-linear-gradient($first_color, $second_color); /* For Opera 11.1 to 12.0 */
+	    background: -moz-linear-gradient($first_color, $second_color); /* For Firefox 3.6 to 15 */
+	    background: linear-gradient($first_color, $second_color); /* Standard syntax */	
+	} @else {
+		background: $first_color; /* For browsers that do not support gradients */
+	    background: -webkit-linear-gradient(right, $first_color, $second_color); /* For Safari 5.1 to 6.0 */
+	    background: -o-linear-gradient(left, $first_color, $second_color); /* For Opera 11.1 to 12.0 */
+	    background: -moz-linear-gradient(left, $first_color, $second_color); /* For Firefox 3.6 to 15 */
+	    background: linear-gradient(to left, $first_color, $second_color); /* Standard syntax */	
+	}
+}
+@mixin squareBoxImg ($var) {
+	height: $var;
+	width: $var;
+	line-height: $var;
+}
+@mixin muscle-flex {
+	display: -webkit-box;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+}
+@mixin multipleTransition($var, $var2) {
+	-webkit-transition: $var, $var2;
+	-moz-transition: $var, $var2;
+	-o-transition: $var, $var2;
+	-ms-transition: $var, $var2;
+	transition: $var, $var2;
+}
+@mixin placeholderColor($val) {
+	::-webkit-input-placeholder {color: $val;}
+	::-moz-placeholder {color: $val;}
+	::-ms-input-placeholder {color: $val;}
+	::-moz-placeholder {color: $val;}
+}
+@mixin placeholderPadding($val) {
+	::-webkit-input-placeholder {padding-left: $val}
+	::-moz-placeholder {padding-left: $val}
+	::-ms-input-placeholder {padding-left: $val}
+	::-moz-placeholder {padding-left: $val}
+}
+@mixin radials ($first_color, $second_color, $third_color) {
+	background: $first_color; /* For browsers that do not support gradients */
+	background: -webkit-radial-gradient($first_color, $second_color, $third_color); /* Safari 5.1 to 6.0 */
+	background: -o-radial-gradient($first_color, $second_color, $third_color); /* For Opera 11.6 to 12.0 */
+	background: -moz-radial-gradient($first_color, $second_color, $third_color); /* For Firefox 3.6 to 15 */
+	background: radial-gradient($first_color, $second_color, $third_color); /* Standard syntax */
+}
+@mixin reset {
+	margin: 0 auto !important;
+	padding: 0 !important;
+}
+@mixin rotation($var) {
+	-ms-transform: rotate($var);
+	-webkit-transform: rotate($var);
+	transform: rotate($var);
+}
+@mixin transform($var) {
+	transform: $var;
+	-webkit-transform: $var;
+	-ms-transform: $var;
+}
+@mixin transition($var) {
+	-webkit-transition: $var;
+	-moz-transition: $var;
+	-o-transition: $var;
+	-ms-transition: $var;
+	transition: $var;
+}
+/// @author Harry Roberts
+@mixin on-event($self: false) {
+	@if $self {
+		&,
+		&:hover,
+		&:active,
+		&:focus {
+			@content;
+		}
+	} @else {
+		&:hover,
+		&:active,
+		&:focus {
+			@content;
+		}
+	}
+}

@@ -13,10 +13,17 @@
     }
 
     function greenhouse_styles_scripts() {
-		wp_enqueue_style('greenhouse-integration-style', plugin_dir_url(__FILE__) . 'css/greenhouse-integration-style.css');
-        wp_enqueue_script('greenhouse-integration', plugin_dir_url(__FILE__) . 'js/greenhouse-integration-script-min.js', array('jquery'), '1.2.1', true);
+		wp_enqueue_style('greenhouse-integration-style', plugin_dir_url(__FILE__) . 'assets/css/greenhouse-integration-style.css');
+        wp_enqueue_script('greenhouse-integration', plugin_dir_url(__FILE__) . 'assets/js/greenhouse-integration-script-min.js', array('jquery'), '1.2.1', true);
 	}
 
 	add_action( 'wp_enqueue_scripts', 'greenhouse_styles_scripts' );
+
+	/**
+	 * Add shortcodes here
+	 * 
+	 */
+	include_once('assets/shortcodes/api_request.php');
+	add_shortcode('api-request', 'api_request');
 
 ?>

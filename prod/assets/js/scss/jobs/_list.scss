@@ -1,0 +1,20 @@
+#job-content {
+
+    ul {
+
+        li {
+            position: relative;
+            margin-left: 32px;
+            &:before {
+                position: absolute;
+                content: "\2022";
+                top: 0;
+                margin-left: -16px;
+                font: normal normal normal 24px/1 FontAwesome;
+                color: rgb(20, 166, 135);
+            }
+        }
+
+    }
+
+}

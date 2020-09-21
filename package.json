@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "gulpfile.js",
   "scripts": {
-    "start": "webpack ./prod/assets/js/greenhouse-integration-script.js -o ./dist/greenhouse-integration/js/greenhouse-integration-script-min.js",
+    "start": "webpack ./prod/assets/js/greenhouse-integration-script.js -o ./dist/greenhouse-integration/assets/js/greenhouse-integration-script-min.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Peter Berki",
