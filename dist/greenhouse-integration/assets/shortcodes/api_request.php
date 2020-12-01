@@ -66,12 +66,14 @@
 
         for ( $i = 0; $i < count($json_decode_response); $i++ ) {
 
-            $current_content = preg_replace($reg_pattern, "", $json_decode_response[$i]['content']);
-            $markup_body .= "<article class='job-list-row job-list-row--active job-list-row--filtered'>";
-            $markup_body .= "<div class='job-list-column job-list-column--small'><p>" . $json_decode_response[$i]['title'] . "</p></div>";
-            $markup_body .= "<div class='job-list-column job-list-column--small'><p>" . $json_decode_response[$i]['location']['name'] . "</p></div>";
-            $markup_body .= "<div class='job-list-column job-list-column--large'><p>" . content_truncation($current_content) . "</p></div>";
-            $markup_body .= "</article>";
+                if ( $json_decode_response[$i]['internal'] ) {
+                    $current_content = preg_replace($reg_pattern, "", $json_decode_response[$i]['content']);
+                    $markup_body .= "<article class='job-list-row job-list-row--active job-list-row--filtered'>";
+                    $markup_body .= "<div class='job-list-column job-list-column--small'><p>" . $json_decode_response[$i]['title'] . "</p></div>";
+                    $markup_body .= "<div class='job-list-column job-list-column--small'><p>" . $json_decode_response[$i]['location']['name'] . "</p></div>";
+                    $markup_body .= "<div class='job-list-column job-list-column--large'><p>" . content_truncation($current_content) . "</p></div>";
+                    $markup_body .= "</article>";
+                }
 
         }
 

@@ -302,7 +302,7 @@ jQuery(document).ready(function($){
             + "</div>";
     
             var addNewLocation = function( value, comparisonList, num ) {   
-                var currentValue = value;
+                var currentValue = value.trim();
                 if ( comparisonList.length < 1 ) {
                     var currentLocation = new jobFigureObj( currentValue , 1 );
                     comparisonList.push(currentLocation);
@@ -359,8 +359,8 @@ jQuery(document).ready(function($){
     
                             */
     
-                            addNewLocation(cityValue, cityJobArr, 0);
-                            addNewLocation(countryValue, countryJobArr, 0);
+                            addNewLocation(cityValue.trim(), cityJobArr, 0);
+                            addNewLocation(countryValue.trim(), countryJobArr, 0);
     
                             /*
     
@@ -1093,7 +1093,7 @@ jQuery(document).ready(function($){
     var today = new Date();
     var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-    console.log("Script update August 4th, 2020");
+    console.log("Script update November 26th, 2020");
 
     $(window).scroll( function() {
         //console.log("window scrolled");
