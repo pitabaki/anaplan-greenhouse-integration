@@ -49,13 +49,13 @@
         $markup_header = "<div class='job-list-container'>
                             <div class='job-list-row--title'>
                                 <div class='job-list-column job-list-column--small'>
-                                    <p><strong>Title</strong></p>
-                                </div>
-                                <div class='job-list-column job-list-column--small'>
-                                    <p><strong>Location</strong></p>
+                                    <p><strong>Req #</strong></p>
                                 </div>
                                 <div class='job-list-column job-list-column--large'>
-                                    <p><strong>Description</strong></p>
+                                    <p><strong>Title</strong></p>
+                                </div>
+                                <div class='job-list-column job-list-column--large'>
+                                    <p><strong>Location</strong></p>
                                 </div>
                             </div>
                         </div>";
@@ -67,11 +67,14 @@
         for ( $i = 0; $i < count($json_decode_response); $i++ ) {
 
                 if ( $json_decode_response[$i]['internal'] ) {
-                    $current_content = preg_replace($reg_pattern, "", $json_decode_response[$i]['content']);
+                    $job_id = $json_decode_response[$i]['id'];
+                    $req_id = $json_decode_response[$i]['job_id'];
+                    $current_content = preg_replace($reg_pattern, "", $json_decode_response[$i]['internal_content']);
                     $markup_body .= "<article class='job-list-row job-list-row--active job-list-row--filtered'>";
-                    $markup_body .= "<div class='job-list-column job-list-column--small'><p>" . $json_decode_response[$i]['title'] . "</p></div>";
-                    $markup_body .= "<div class='job-list-column job-list-column--small'><p>" . $json_decode_response[$i]['location']['name'] . "</p></div>";
-                    $markup_body .= "<div class='job-list-column job-list-column--large'><p>" . content_truncation($current_content) . "</p></div>";
+                    $markup_body .= "<div class='job-list-column job-list-column--small'><p><a href='https://anaplan.greenhouse.io/internal_job_board/applications/$job_id' target='_blank'>$req_id</a></p></div>";
+                    $markup_body .= "<div class='job-list-column job-list-column--large'><p><a href='https://anaplan.greenhouse.io/internal_job_board/applications/$job_id' target='_blank'>" . $json_decode_response[$i]['title'] . "</a></p></div>";
+                    $markup_body .= "<div class='job-list-column job-list-column--large'><p>" . $json_decode_response[$i]['location']['name'] . "</p></div>";
+                    //$markup_body .= "<div class='job-list-column job-list-column--large'><p>" . content_truncation($current_content) . "</p></div>";
                     $markup_body .= "</article>";
                 }
 
