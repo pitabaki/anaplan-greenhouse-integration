@@ -89,7 +89,7 @@ jQuery(document).ready(function($){
                 thisContent = thisContent.replace(/&quot;/gi, "\"");
                 thisContent = thisContent.replace(/\&amp\;nbsp\;/gi, " ");
                 thisContent = thisContent.replace(/\&amp\;amp\;/gi, "&");
-                console.log(thisContent);
+                console.log(data);
                 $("#job-title").html(data.title);
                 $("#job-title-content").find("h3").html(data.title);
                 $("#job-location").html(data.location.name.trim());
